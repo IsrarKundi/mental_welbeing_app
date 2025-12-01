@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/app_colors.dart';
 import '../../widgets/liquid_glass_container.dart';
+import '../../widgets/glass_text_field.dart';
 import 'chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
@@ -32,8 +33,19 @@ class ChatView extends GetView<ChatController> {
         child: Column(
           children: [
             Expanded(
-              child: Obx(
-                () => ListView.builder(
+              child: Obx(() {
+                if (controller.messages.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Start a conversation...',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white54,
+                        fontSize: 16,
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
                   itemCount: controller.messages.length,
                   itemBuilder: (context, index) {
@@ -50,8 +62,8 @@ class ChatView extends GetView<ChatController> {
                       ),
                     );
                   },
-                ),
-              ),
+                );
+              }),
             ),
             _buildInputArea(),
           ],
@@ -61,10 +73,14 @@ class ChatView extends GetView<ChatController> {
   }
 
   Widget _buildAIBubble(String text) {
-    return LiquidGlassContainer(
-      width: Get.width * 0.7,
-      borderRadius: 20,
+    return Container(
+      constraints: BoxConstraints(maxWidth: Get.width * 0.7),
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+      ),
       child: Text(
         text,
         style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
@@ -96,32 +112,13 @@ class ChatView extends GetView<ChatController> {
     final TextEditingController textController = TextEditingController();
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: LiquidGlassContainer(
-        height: 60,
-        borderRadius: 30,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: textController,
-                style: GoogleFonts.poppins(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Type a message...',
-                  hintStyle: GoogleFonts.poppins(color: Colors.white54),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.send, color: Colors.white),
-              onPressed: () {
-                controller.sendMessage(textController.text);
-                textController.clear();
-              },
-            ),
-          ],
-        ),
+      child: GlassTextField(
+        controller: textController,
+        hintText: 'Type a message...',
+        onSend: () {
+          controller.sendMessage(textController.text);
+          textController.clear();
+        },
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
 import '../../widgets/liquid_glass_container.dart';
+import '../../routes/app_pages.dart';
 import 'home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -61,15 +62,28 @@ class HomeView extends GetView<HomeController> {
           'Good Morning,',
           style: GoogleFonts.poppins(fontSize: 24, color: Colors.white70),
         ),
-        Obx(
-          () => Text(
-            controller.userName.value,
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Obx(
+              () => Text(
+                controller.userName.value,
+                style: GoogleFonts.poppins(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
+            IconButton(
+              onPressed: () => Get.toNamed(Routes.CHAT),
+              icon: const Icon(
+                Icons.chat_bubble_outline,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ],
         ),
       ],
     ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, end: 0);
