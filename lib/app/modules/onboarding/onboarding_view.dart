@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 import '../../widgets/liquid_glass_container.dart';
 import 'onboarding_controller.dart';
 
@@ -89,65 +90,92 @@ class OnboardingView extends GetView<OnboardingController> {
           ),
 
           // Content
-          Column(
+          Stack(
             children: [
-              Expanded(
-                child: PageView.builder(
-                  controller: controller.pageController,
-                  onPageChanged: controller.onPageChanged,
-                  itemCount: controller.contents.length,
-                  itemBuilder: (context, index) {
-                    final content = controller.contents[index];
-                    return Padding(
-                      padding: const EdgeInsets.all(40.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          LiquidGlassContainer(
-                            width: 200,
-                            height: 200,
-                            borderRadius: 100,
-                            child: Icon(
-                              content.icon,
-                              size: 80,
-                              color: Colors.white,
-                            ),
-                          ).animate().fadeIn(duration: 600.ms).scale(),
-                          const SizedBox(height: 40),
-                          Text(
-                                content.title,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              )
-                              .animate()
-                              .fadeIn(delay: 200.ms)
-                              .slideY(begin: 0.2, end: 0),
-                          const SizedBox(height: 20),
-                          Text(
-                                content.description,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.white70,
-                                ),
-                              )
-                              .animate()
-                              .fadeIn(delay: 400.ms)
-                              .slideY(begin: 0.2, end: 0),
-                        ],
+              PageView.builder(
+                controller: controller.pageController,
+                onPageChanged: controller.onPageChanged,
+                itemCount: controller.contents.length,
+                itemBuilder: (context, index) {
+                  final content = controller.contents[index];
+                  return Stack(
+                    children: [
+                      // Background Image
+                      Positioned.fill(
+                        child: Image.network(
+                          _getImageUrl(index),
+                          fit: BoxFit.cover,
+                          color: Colors.black.withOpacity(0.4),
+                          colorBlendMode: BlendMode.darken,
+                        ),
                       ),
-                    );
-                  },
-                ),
+                      // Content
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.8),
+                                Colors.black.withOpacity(0.95),
+                              ],
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                content.icon,
+                                size: 60,
+                                color: AppColors.cyanAccent,
+                              ).animate().fadeIn(duration: 600.ms).scale(),
+                              const SizedBox(height: 24),
+                              Text(
+                                    content.title,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                  )
+                                  .animate()
+                                  .fadeIn(delay: 200.ms)
+                                  .slideY(begin: 0.2, end: 0),
+                              const SizedBox(height: 16),
+                              Text(
+                                    content.description,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      color: Colors.white70,
+                                      height: 1.5,
+                                    ),
+                                  )
+                                  .animate()
+                                  .fadeIn(delay: 400.ms)
+                                  .slideY(begin: 0.2, end: 0),
+                              const SizedBox(height: 120),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
 
-              // Indicators and Button
-              Padding(
-                padding: const EdgeInsets.all(40.0),
+              // Indicators and Button at bottom
+              Positioned(
+                bottom: 40,
+                left: 40,
+                right: 40,
                 child: Column(
                   children: [
                     Row(
@@ -179,10 +207,13 @@ class OnboardingView extends GetView<OnboardingController> {
                               controller.contents.length - 1
                           ? GestureDetector(
                               onTap: controller.getStarted,
-                              child: LiquidGlassContainer(
+                              child: Container(
                                 height: 60,
                                 width: double.infinity,
-                                borderRadius: 30,
+                                decoration: BoxDecoration(
+                                  color: AppColors.cyanAccent,
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
                                 child: Center(
                                   child: Text(
                                     'Get Started',
@@ -205,5 +236,18 @@ class OnboardingView extends GetView<OnboardingController> {
         ],
       ),
     );
+  }
+
+  String _getImageUrl(int index) {
+    switch (index) {
+      case 0:
+        return 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=1200&q=80'; // Safe space / meditation
+      case 1:
+        return 'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=1200&q=80'; // AI / Technology
+      case 2:
+        return 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80'; // Mood tracking / journal
+      default:
+        return 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=1200&q=80';
+    }
   }
 }
