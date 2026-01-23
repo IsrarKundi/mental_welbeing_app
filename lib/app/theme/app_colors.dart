@@ -48,6 +48,18 @@ class AppColors {
     colors: [Color(0xFF991B1B), Color(0xFF7F1D1D)], // Red
   );
 
+  static const LinearGradient lovedGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFEC4899), Color(0xFFBE185D)], // Pink/Rose
+  );
+
+  static const LinearGradient tiredGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)], // Purple/Indigo
+  );
+
   // Text Colors
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.white70;
