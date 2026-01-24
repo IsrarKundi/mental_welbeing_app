@@ -1,7 +1,10 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 
 import '../../../theme/app_colors.dart';
 import 'breathing_controller.dart';
@@ -21,10 +24,11 @@ class BreathingView extends GetView<BreathingController> {
           onPressed: () => Get.back(),
         ),
         title: Text(
-          'Breathing Exercise',
+          'Breathe',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: Colors.white,
+            letterSpacing: 1,
           ),
         ),
         centerTitle: true,
@@ -36,15 +40,15 @@ class BreathingView extends GetView<BreathingController> {
         child: SafeArea(
           child: Column(
             children: [
+              const Spacer(flex: 2),
+              _buildBreathingRing(),
               const Spacer(flex: 1),
-              _buildBreathingCircle(),
-              const SizedBox(height: 40),
               _buildPhaseText(),
-              const Spacer(flex: 1),
-              _buildProgressIndicator(),
-              const SizedBox(height: 24),
-              _buildControls(),
+              const Spacer(flex: 2),
+              _buildCycleIndicator(),
               const SizedBox(height: 40),
+              _buildControls(),
+              const SizedBox(height: 60),
             ],
           ),
         ),
@@ -52,164 +56,80 @@ class BreathingView extends GetView<BreathingController> {
     );
   }
 
-  Widget _buildBreathingCircle() {
+  Widget _buildBreathingRing() {
     return Obx(() {
       final phase = controller.currentPhase.value;
       final isPlaying = controller.isPlaying.value;
 
-      // Determine animation parameters based on phase
-      double targetScale;
-      int durationMs;
-
-      switch (phase) {
-        case BreathingPhase.inhale:
-          targetScale = 1.4;
-          durationMs = controller.inhaleDuration * 1000;
-          break;
-        case BreathingPhase.hold:
-          targetScale = 1.4;
-          durationMs = controller.holdDuration * 1000;
-          break;
-        case BreathingPhase.exhale:
-          targetScale = 0.8;
-          durationMs = controller.exhaleDuration * 1000;
-          break;
-        case BreathingPhase.rest:
-          targetScale = 0.8;
-          durationMs = controller.restDuration * 1000;
-          break;
-      }
-
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          // Outer glow ring
-          AnimatedContainer(
-            duration: Duration(milliseconds: durationMs),
-            curve: Curves.easeInOut,
-            width: 280 * (isPlaying ? targetScale : 1.0),
-            height: 280 * (isPlaying ? targetScale : 1.0),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.cyanAccent.withOpacity(0.0),
-                  AppColors.cyanAccent.withOpacity(0.1),
-                ],
-              ),
-            ),
-          ),
-          // Middle ring
-          AnimatedContainer(
-            duration: Duration(milliseconds: durationMs),
-            curve: Curves.easeInOut,
-            width: 240 * (isPlaying ? targetScale : 1.0),
-            height: 240 * (isPlaying ? targetScale : 1.0),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.cyanAccent.withOpacity(0.3),
-                width: 2,
-              ),
-            ),
-          ),
-          // Inner breathing circle
-          AnimatedContainer(
-            duration: Duration(milliseconds: durationMs),
-            curve: Curves.easeInOut,
-            width: 180 * (isPlaying ? targetScale : 1.0),
-            height: 180 * (isPlaying ? targetScale : 1.0),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.cyanAccent.withOpacity(0.6),
-                  AppColors.tealAccent.withOpacity(0.3),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.cyanAccent.withOpacity(0.4),
-                  blurRadius: 40,
-                  spreadRadius: 10,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Icon(_getPhaseIcon(phase), size: 50, color: Colors.white),
-            ),
-          ),
-        ],
+      return PremiumBreathingRing(
+        phase: phase,
+        isPlaying: isPlaying,
+        inhaleDuration: controller.inhaleDuration.value,
+        holdDuration: controller.holdDuration.value,
+        exhaleDuration: controller.exhaleDuration.value,
+        restDuration: controller.restDuration.value,
       );
     });
   }
 
-  IconData _getPhaseIcon(BreathingPhase phase) {
-    switch (phase) {
-      case BreathingPhase.inhale:
-        return Icons.arrow_upward_rounded;
-      case BreathingPhase.hold:
-        return Icons.pause_rounded;
-      case BreathingPhase.exhale:
-        return Icons.arrow_downward_rounded;
-      case BreathingPhase.rest:
-        return Icons.self_improvement_rounded;
-    }
-  }
-
   Widget _buildPhaseText() {
     return Obx(
-      () => Column(
-        children: [
-          Text(
-            controller.phaseText,
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ).animate().fadeIn(duration: 300.ms),
-          const SizedBox(height: 8),
-          Text(
-            controller.phaseSubtext,
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.white60),
-          ),
-        ],
-      ),
+      () => Text(
+        controller.phaseSubtext,
+        style: GoogleFonts.poppins(
+          fontSize: 16,
+          color: Colors.white.withOpacity(0.5),
+          letterSpacing: 0.5,
+        ),
+      ).animate().fadeIn(duration: 300.ms),
     );
   }
 
-  Widget _buildProgressIndicator() {
+  Widget _buildCycleIndicator() {
     return Obx(
-      () => Column(
-        children: [
-          Text(
-            'Cycle ${controller.currentCycle.value + 1} of ${controller.totalCycles}',
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white54),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: 200,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor:
-                  (controller.currentCycle.value + 1) / controller.totalCycles,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.cyanAccent, AppColors.tealAccent],
-                  ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      () => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 60),
+        child: Column(
+          children: [
+            Text(
+              'Cycle ${controller.currentCycle.value + 1} of ${controller.totalCycles.value}',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: Colors.white.withOpacity(0.5),
+                letterSpacing: 0.5,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final progress =
+                    (controller.currentCycle.value + 1) /
+                    controller.totalCycles.value;
+                return Container(
+                  height: 4,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      width: constraints.maxWidth * progress,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.cyanAccent, AppColors.tealAccent],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -219,71 +139,461 @@ class BreathingView extends GetView<BreathingController> {
       () => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Reset button
+          // Reset
           GestureDetector(
-            onTap: controller.resetSession,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              controller.resetSession();
+            },
             child: Container(
-              width: 56,
-              height: 56,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                color: Colors.white.withOpacity(0.08),
               ),
               child: const Icon(
                 Icons.refresh_rounded,
-                color: Colors.white70,
-                size: 28,
+                color: Colors.white54,
+                size: 24,
               ),
             ),
           ),
-          const SizedBox(width: 24),
-          // Play/Pause button
+          const SizedBox(width: 32),
+          // Play/Pause
           GestureDetector(
-            onTap: controller.togglePlay,
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              controller.togglePlay();
+            },
             child: Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [AppColors.cyanAccent, AppColors.tealAccent],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.cyanAccent.withOpacity(0.4),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ],
               ),
               child: Icon(
                 controller.isPlaying.value
                     ? Icons.pause_rounded
                     : Icons.play_arrow_rounded,
                 color: Colors.white,
-                size: 40,
+                size: 36,
               ),
             ),
-          ).animate().scale(duration: 200.ms),
-          const SizedBox(width: 24),
-          // Settings placeholder
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.1),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-            ),
-            child: const Icon(
-              Icons.tune_rounded,
-              color: Colors.white70,
-              size: 28,
+          ),
+          const SizedBox(width: 32),
+          // Settings
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _showSettingsSheet(Get.context!);
+            },
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+              ),
+              child: const Icon(
+                Icons.tune_rounded,
+                color: Colors.white54,
+                size: 24,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  void _showSettingsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1a1a2e).withOpacity(0.98),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Settings',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildSettingRow('Inhale', controller.inhaleDuration, 2, 10, 's'),
+              _buildSettingRow('Hold', controller.holdDuration, 1, 10, 's'),
+              _buildSettingRow('Exhale', controller.exhaleDuration, 2, 12, 's'),
+              _buildSettingRow('Rest', controller.restDuration, 1, 6, 's'),
+              const SizedBox(height: 12),
+              _buildSettingRow('Cycles', controller.totalCycles, 1, 10, ''),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingRow(
+    String label,
+    RxInt value,
+    int min,
+    int max,
+    String suffix,
+  ) {
+    return Obx(
+      () => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+            ),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (value.value > min) value.value--;
+                  },
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                    child: const Icon(
+                      Icons.remove,
+                      color: Colors.white54,
+                      size: 18,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 48,
+                  child: Text(
+                    '${value.value}$suffix',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.cyanAccent,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (value.value < max) value.value++;
+                  },
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white54,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Premium Breathing Ring
+class PremiumBreathingRing extends StatefulWidget {
+  final BreathingPhase phase;
+  final bool isPlaying;
+  final int inhaleDuration;
+  final int holdDuration;
+  final int exhaleDuration;
+  final int restDuration;
+
+  const PremiumBreathingRing({
+    Key? key,
+    required this.phase,
+    required this.isPlaying,
+    required this.inhaleDuration,
+    required this.holdDuration,
+    required this.exhaleDuration,
+    required this.restDuration,
+  }) : super(key: key);
+
+  @override
+  State<PremiumBreathingRing> createState() => _PremiumBreathingRingState();
+}
+
+class _PremiumBreathingRingState extends State<PremiumBreathingRing>
+    with TickerProviderStateMixin {
+  late AnimationController _progressController;
+  late AnimationController _scaleController;
+  late Animation<double> _progressAnimation;
+  late Animation<double> _scaleAnimation;
+
+  int _secondsRemaining = 0;
+  double _lastProgress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressController = AnimationController(vsync: this);
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+
+    _progressAnimation = Tween<double>(
+      begin: 0,
+      end: 0,
+    ).animate(_progressController);
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.0,
+    ).animate(_scaleController);
+
+    _progressController.addListener(_updateSecondsRemaining);
+    _updateAnimation();
+  }
+
+  void _updateSecondsRemaining() {
+    final duration = _getCurrentDuration();
+    final remaining = ((1 - _progressController.value) * duration).ceil();
+    if (remaining != _secondsRemaining) {
+      setState(() => _secondsRemaining = remaining);
+    }
+  }
+
+  int _getCurrentDuration() {
+    switch (widget.phase) {
+      case BreathingPhase.inhale:
+        return widget.inhaleDuration;
+      case BreathingPhase.hold:
+        return widget.holdDuration;
+      case BreathingPhase.exhale:
+        return widget.exhaleDuration;
+      case BreathingPhase.rest:
+        return widget.restDuration;
+    }
+  }
+
+  @override
+  void didUpdateWidget(PremiumBreathingRing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.phase != widget.phase ||
+        oldWidget.isPlaying != widget.isPlaying) {
+      _updateAnimation();
+    }
+  }
+
+  void _updateAnimation() {
+    if (!widget.isPlaying) {
+      _progressController.stop();
+      _scaleController.stop();
+      return;
+    }
+
+    HapticFeedback.selectionClick();
+
+    double startProgress, endProgress, startScale, endScale;
+    int durationSeconds;
+
+    switch (widget.phase) {
+      case BreathingPhase.inhale:
+        startProgress = 0.0;
+        endProgress = 1.0;
+        startScale = 1.0;
+        endScale = 1.08;
+        durationSeconds = widget.inhaleDuration;
+        break;
+      case BreathingPhase.hold:
+        startProgress = 1.0;
+        endProgress = 1.0;
+        startScale = 1.08;
+        endScale = 1.08;
+        durationSeconds = widget.holdDuration;
+        break;
+      case BreathingPhase.exhale:
+        startProgress = 1.0;
+        endProgress = 0.0;
+        startScale = 1.08;
+        endScale = 1.0;
+        durationSeconds = widget.exhaleDuration;
+        break;
+      case BreathingPhase.rest:
+        startProgress = 0.0;
+        endProgress = 0.0;
+        startScale = 1.0;
+        endScale = 1.0;
+        durationSeconds = widget.restDuration;
+        break;
+    }
+
+    _progressController.duration = Duration(seconds: durationSeconds);
+    _scaleController.duration = Duration(seconds: durationSeconds);
+
+    _progressAnimation = Tween<double>(begin: startProgress, end: endProgress)
+        .animate(
+          CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+        );
+    _scaleAnimation = Tween<double>(begin: startScale, end: endScale).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
+
+    _progressController.forward(from: 0);
+    _scaleController.forward(from: 0);
+    _secondsRemaining = durationSeconds;
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  String _getPhaseLabel() {
+    switch (widget.phase) {
+      case BreathingPhase.inhale:
+        return 'IN';
+      case BreathingPhase.hold:
+        return 'HOLD';
+      case BreathingPhase.exhale:
+        return 'OUT';
+      case BreathingPhase.rest:
+        return 'REST';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_progressController, _scaleController]),
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: SizedBox(
+            width: 240,
+            height: 240,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Ring
+                CustomPaint(
+                  painter: MinimalRingPainter(
+                    progress: _progressAnimation.value,
+                  ),
+                  size: const Size(240, 240),
+                ),
+                // Center content
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '$_secondsRemaining',
+                      style: GoogleFonts.poppins(
+                        fontSize: 56,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.white,
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getPhaseLabel(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.cyanAccent,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class MinimalRingPainter extends CustomPainter {
+  final double progress;
+
+  MinimalRingPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 8;
+    const strokeWidth = 6.0;
+
+    // Background ring
+    final bgPaint = Paint()
+      ..color = Colors.white.withOpacity(0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Progress arc
+    if (progress > 0.001) {
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final sweepAngle = 2 * pi * progress;
+
+      final progressPaint = Paint()
+        ..color = AppColors.cyanAccent
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawArc(rect, -pi / 2, sweepAngle, false, progressPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant MinimalRingPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

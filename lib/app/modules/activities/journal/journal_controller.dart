@@ -13,11 +13,39 @@ class JournalController extends GetxController {
     MoodOption(emoji: '🌟', label: 'Hopeful'),
   ];
 
-  final prompts = [
-    'What made you smile today?',
-    'Who are you thankful for?',
-    'What\'s something good that happened?',
-  ];
+  // Mood-specific prompts
+  final Map<String, List<String>> moodPrompts = {
+    'Grateful': [
+      'What made you smile today?',
+      'Who are you thankful for?',
+      'What\'s a small thing you appreciated?',
+    ],
+    'Happy': [
+      'What brought you joy today?',
+      'What made you laugh recently?',
+      'What are you excited about?',
+    ],
+    'Peaceful': [
+      'What helped you feel calm today?',
+      'What moment felt most serene?',
+      'What brings you inner peace?',
+    ],
+    'Strong': [
+      'What challenge did you overcome?',
+      'What made you feel capable today?',
+      'What strength are you proud of?',
+    ],
+    'Hopeful': [
+      'What are you looking forward to?',
+      'What possibility excites you?',
+      'What gives you hope for tomorrow?',
+    ],
+  };
+
+  List<String> get prompts {
+    final mood = moodOptions[selectedMoodIndex.value].label;
+    return moodPrompts[mood] ?? moodPrompts['Grateful']!;
+  }
 
   final selectedMoodIndex = 0.obs;
 

@@ -1,9 +1,12 @@
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class MindfulWalkController extends GetxController {
   final isWalking = false.obs;
   final elapsedSeconds = 0.obs;
   final selectedEnvironment = 0.obs;
+  Timer? _timer;
 
   final environments = [
     WalkEnvironment(
@@ -45,6 +48,8 @@ class MindfulWalkController extends GetxController {
       (elapsedSeconds.value ~/ 30) % mindfulnessPrompts.length;
   String get currentPrompt => mindfulnessPrompts[currentPromptIndex];
 
+  double get progress => (elapsedSeconds.value % 60) / 60.0;
+
   String get formattedTime {
     final minutes = (elapsedSeconds.value ~/ 60).toString().padLeft(2, '0');
     final seconds = (elapsedSeconds.value % 60).toString().padLeft(2, '0');
@@ -52,20 +57,49 @@ class MindfulWalkController extends GetxController {
   }
 
   void selectEnvironment(int index) {
-    selectedEnvironment.value = index;
+    if (index != selectedEnvironment.value) {
+      HapticFeedback.selectionClick();
+      selectedEnvironment.value = index;
+    }
   }
 
   void toggleWalking() {
+    HapticFeedback.mediumImpact();
     isWalking.value = !isWalking.value;
+    if (isWalking.value) {
+      _startTimer();
+    } else {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      elapsedSeconds.value++;
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   void reset() {
+    HapticFeedback.lightImpact();
+    _stopTimer();
     isWalking.value = false;
     elapsedSeconds.value = 0;
   }
 
   WalkEnvironment get currentEnvironment =>
       environments[selectedEnvironment.value];
+
+  @override
+  void onClose() {
+    _stopTimer();
+    super.onClose();
+  }
 }
 
 class WalkEnvironment {

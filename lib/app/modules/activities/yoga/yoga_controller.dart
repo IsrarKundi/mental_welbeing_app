@@ -1,9 +1,12 @@
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class YogaController extends GetxController {
   final selectedPoseIndex = 0.obs;
   final isInPose = false.obs;
   final elapsedSeconds = 0.obs;
+  Timer? _timer;
 
   final poses = [
     YogaPose(
@@ -80,29 +83,75 @@ class YogaController extends GetxController {
     return elapsedSeconds.value / currentPose.duration;
   }
 
+  @override
+  void onClose() {
+    _timer?.cancel();
+    super.onClose();
+  }
+
   void selectPose(int index) {
+    if (selectedPoseIndex.value == index) return;
+    HapticFeedback.selectionClick();
+    _stopTimer();
     selectedPoseIndex.value = index;
     elapsedSeconds.value = 0;
     isInPose.value = false;
   }
 
   void togglePose() {
+    HapticFeedback.mediumImpact();
     isInPose.value = !isInPose.value;
+    if (isInPose.value) {
+      _startTimer();
+    } else {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (elapsedSeconds.value < currentPose.duration) {
+        elapsedSeconds.value++;
+      } else {
+        _stopTimer();
+        isInPose.value = false;
+        HapticFeedback.heavyImpact();
+        _moveToNextAutomatically();
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _moveToNextAutomatically() {
+    if (selectedPoseIndex.value < poses.length - 1) {
+      Future.delayed(const Duration(seconds: 2), () {
+        nextPose();
+      });
+    }
   }
 
   void nextPose() {
     if (selectedPoseIndex.value < poses.length - 1) {
+      HapticFeedback.lightImpact();
       selectPose(selectedPoseIndex.value + 1);
     }
   }
 
   void previousPose() {
     if (selectedPoseIndex.value > 0) {
+      HapticFeedback.lightImpact();
       selectPose(selectedPoseIndex.value - 1);
     }
   }
 
   void reset() {
+    HapticFeedback.lightImpact();
+    _stopTimer();
     isInPose.value = false;
     elapsedSeconds.value = 0;
   }

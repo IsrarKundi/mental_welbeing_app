@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'package:get/get.dart';
 
 class SleepStoriesController extends GetxController {
   final selectedStoryIndex = (-1).obs;
   final isPlaying = false.obs;
+  final progress = 0.0.obs;
+
+  Timer? _timer;
 
   final stories = [
     SleepStory(
@@ -54,15 +58,54 @@ class SleepStoriesController extends GetxController {
 
   void selectStory(int index) {
     selectedStoryIndex.value = index;
+    progress.value = 0.0;
+    isPlaying.value = true;
+    _startTimer();
   }
 
   void togglePlay() {
     isPlaying.value = !isPlaying.value;
+    if (isPlaying.value) {
+      _startTimer();
+    } else {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (progress.value < 1.0) {
+        progress.value += 0.002; // Simulate progress
+      } else {
+        _stopTimer();
+        isPlaying.value = false;
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void rewind() {
+    progress.value = (progress.value - 0.05).clamp(0.0, 1.0);
+  }
+
+  void forward() {
+    progress.value = (progress.value + 0.05).clamp(0.0, 1.0);
   }
 
   SleepStory? get selectedStory {
     if (selectedStoryIndex.value < 0) return null;
     return stories[selectedStoryIndex.value];
+  }
+
+  @override
+  void onClose() {
+    _stopTimer();
+    super.onClose();
   }
 }
 

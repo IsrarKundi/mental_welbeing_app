@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mental_welbeing/app/modules/activities/breathing/breathing_view.dart';
 
 import '../modules/home/home_binding.dart';
 import '../modules/home/home_view.dart';
@@ -7,7 +8,6 @@ import '../modules/chat/chat_view.dart';
 import '../modules/onboarding/onboarding_binding.dart';
 import '../modules/onboarding/onboarding_view.dart';
 import '../modules/activities/breathing/breathing_binding.dart';
-import '../modules/activities/breathing/breathing_view.dart';
 import '../modules/activities/meditation/meditation_binding.dart';
 import '../modules/activities/meditation/meditation_view.dart';
 import '../modules/activities/journal/journal_binding.dart';

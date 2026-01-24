@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../theme/app_colors.dart';
 import 'journal_controller.dart';
@@ -39,17 +39,17 @@ class JournalView extends GetView<JournalController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 _buildHeader(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
                 _buildMoodSelector(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 18),
                 _buildGratitudeInputs(),
-                const SizedBox(height: 32),
-                _buildQuote(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 18),
                 _buildSaveButton(),
-                const SizedBox(height: 40),
+                const SizedBox(height: 18),
+                _buildQuote(),
+                const SizedBox(height: 18),
               ],
             ),
           ),
@@ -65,7 +65,7 @@ class JournalView extends GetView<JournalController> {
         Text(
           'Today\'s Gratitude',
           style: GoogleFonts.poppins(
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -73,10 +73,10 @@ class JournalView extends GetView<JournalController> {
         const SizedBox(height: 4),
         Text(
           'Take a moment to appreciate the good things',
-          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white60),
+          style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
         ),
       ],
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1, end: 0);
+    );
   }
 
   Widget _buildMoodSelector() {
@@ -86,111 +86,113 @@ class JournalView extends GetView<JournalController> {
         Text(
           'How do you feel?',
           style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.white70,
+            fontSize: 13,
+            color: Colors.white60,
             fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 70,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: controller.moodOptions.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final mood = controller.moodOptions[index];
-              return Obx(() {
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Obx(
+            () => Row(
+              children: List.generate(controller.moodOptions.length, (index) {
+                final mood = controller.moodOptions[index];
                 final isSelected = controller.selectedMoodIndex.value == index;
                 return GestureDetector(
-                  onTap: () => controller.selectMood(index),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    controller.selectMood(index);
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.only(right: 10),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                      horizontal: 14,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.cyanAccent.withOpacity(0.3)
+                          ? AppColors.cyanAccent.withOpacity(0.15)
                           : Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: isSelected
-                            ? AppColors.cyanAccent
+                            ? AppColors.cyanAccent.withOpacity(0.6)
                             : Colors.white.withOpacity(0.1),
-                        width: isSelected ? 2 : 1,
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(mood.emoji, style: const TextStyle(fontSize: 24)),
-                        const SizedBox(height: 4),
+                        Text(mood.emoji, style: const TextStyle(fontSize: 18)),
+                        const SizedBox(width: 6),
                         Text(
                           mood.label,
                           style: GoogleFonts.poppins(
-                            color: isSelected ? Colors.white : Colors.white70,
-                            fontSize: 10,
+                            color: isSelected ? Colors.white : Colors.white60,
+                            fontSize: 12,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
                   ),
                 );
-              });
-            },
+              }),
+            ),
           ),
         ),
       ],
-    ).animate().fadeIn(delay: 100.ms, duration: 400.ms);
+    );
   }
 
   Widget _buildGratitudeInputs() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'I\'m grateful for...',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+    return Obx(
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'I\'m grateful for...',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        ...List.generate(3, (index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _buildGratitudeInput(index),
-          ).animate().fadeIn(
-            delay: Duration(milliseconds: 200 + (index * 100)),
-            duration: 400.ms,
-          );
-        }),
-      ],
+          const SizedBox(height: 14),
+          ...List.generate(3, (index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildGratitudeInput(index),
+            );
+          }),
+        ],
+      ),
     );
   }
 
   Widget _buildGratitudeInput(int index) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
             child: Row(
               children: [
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: 22,
+                  height: 22,
                   decoration: BoxDecoration(
-                    color: AppColors.cyanAccent.withOpacity(0.2),
+                    color: AppColors.cyanAccent.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -198,7 +200,7 @@ class JournalView extends GetView<JournalController> {
                       '${index + 1}',
                       style: GoogleFonts.poppins(
                         color: AppColors.cyanAccent,
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -209,8 +211,9 @@ class JournalView extends GetView<JournalController> {
                   child: Text(
                     controller.prompts[index],
                     style: GoogleFonts.poppins(
-                      color: Colors.white54,
+                      color: Colors.white70,
                       fontSize: 12,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
@@ -223,9 +226,9 @@ class JournalView extends GetView<JournalController> {
             maxLines: 2,
             decoration: InputDecoration(
               hintText: 'Write here...',
-              hintStyle: GoogleFonts.poppins(color: Colors.white30),
+              hintStyle: GoogleFonts.poppins(color: Colors.white24),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
+              contentPadding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
             ),
           ),
         ],
@@ -235,83 +238,78 @@ class JournalView extends GetView<JournalController> {
 
   Widget _buildQuote() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.cyanAccent.withOpacity(0.1),
-            AppColors.tealAccent.withOpacity(0.05),
-          ],
-        ),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cyanAccent.withOpacity(0.2)),
+        border: Border.all(color: AppColors.cyanAccent.withOpacity(0.15)),
       ),
       child: Column(
         children: [
-          const Icon(Icons.format_quote, color: AppColors.cyanAccent, size: 32),
+          Icon(
+            Icons.format_quote_rounded,
+            color: AppColors.cyanAccent.withOpacity(0.7),
+            size: 28,
+          ),
           const SizedBox(height: 8),
           Text(
             '"Gratitude turns what we have into enough."',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 16,
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 15,
               fontStyle: FontStyle.italic,
+              height: 1.4,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '— Anonymous',
-            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12),
+            style: GoogleFonts.poppins(color: Colors.white38, fontSize: 11),
           ),
         ],
       ),
-    ).animate().fadeIn(delay: 500.ms, duration: 400.ms);
+    );
   }
 
   Widget _buildSaveButton() {
     return GestureDetector(
-          onTap: () {
-            controller.saveEntry();
-            Get.snackbar(
-              '✨ Saved!',
-              'Your gratitude has been recorded',
-              backgroundColor: AppColors.cyanAccent.withOpacity(0.8),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.BOTTOM,
-              margin: const EdgeInsets.all(20),
-            );
-          },
-          child: Container(
-            width: double.infinity,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.cyanAccent, AppColors.tealAccent],
-              ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.cyanAccent.withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'Save Entry',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        controller.saveEntry();
+        Get.snackbar(
+          '✨ Saved!',
+          'Your gratitude has been recorded',
+          backgroundColor: AppColors.cyanAccent.withOpacity(0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(20),
+          borderRadius: 12,
+          duration: const Duration(seconds: 2),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        height: 52,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.cyanAccent, AppColors.tealAccent],
+          ),
+          borderRadius: BorderRadius.circular(26),
+        ),
+        child: Center(
+          child: Text(
+            'Save Entry',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        )
-        .animate()
-        .fadeIn(delay: 600.ms, duration: 400.ms)
-        .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1));
+        ),
+      ),
+    );
   }
 }

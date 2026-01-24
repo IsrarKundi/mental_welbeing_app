@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -37,17 +39,24 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
             colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              _buildHeader(),
-              const SizedBox(height: 24),
-              Expanded(child: _buildStoriesList()),
-              _buildNowPlaying(),
-            ],
-          ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    _buildHeader(),
+                    const SizedBox(height: 14),
+                    Expanded(child: _buildStoriesList()),
+                  ],
+                ),
+              ),
+            ),
+            _buildNowPlaying(),
+          ],
         ),
       ),
     );
@@ -241,70 +250,176 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
       final story = controller.selectedStory;
       if (story == null) return const SizedBox.shrink();
 
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Color(story.color).withOpacity(0.2),
-          border: Border(
-            top: BorderSide(color: Color(story.color).withOpacity(0.3)),
+      return ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(
+              22,
+              8,
+              22,
+              (MediaQuery.of(Get.context!).padding.bottom - 22)
+                  .clamp(0, 100)
+                  .toDouble(),
+            ),
+            decoration: BoxDecoration(
+              color: Color(
+                story.color,
+              ).withOpacity(0.12), // Lowered opacity for cleaner glass look
+              border: Border(
+                top: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Progress bar with time labels
+                Row(
+                  children: [
+                    Text(
+                      _formatTime(controller.progress.value * 20 * 60),
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: Colors.white54,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: controller.progress.value,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Color(story.color),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      story.duration,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Player content
+                Row(
+                  children: [
+                    // Thumbnail - Removed shadow as requested
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        story.imageUrl,
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    // Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            story.title,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            story.narrator,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.white60,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Controls - cleaner icons
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        controller.rewind();
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.replay_10_rounded,
+                          color: Colors.white70,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        controller.togglePlay();
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(story.color),
+                        ),
+                        child: Icon(
+                          controller.isPlaying.value
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        controller.forward();
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.forward_10_rounded,
+                          color: Colors.white70,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                story.imageUrl,
-                width: 56,
-                height: 56,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    story.title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    story.narrator,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.white60,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: controller.togglePlay,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(story.color),
-                ),
-                child: Icon(
-                  controller.isPlaying.value
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-          ],
         ),
       ).animate().slideY(begin: 1, end: 0, duration: 300.ms);
     });
+  }
+
+  String _formatTime(double seconds) {
+    final mins = (seconds ~/ 60).toString().padLeft(2, '0');
+    final secs = (seconds.toInt() % 60).toString().padLeft(2, '0');
+    return '$mins:$secs';
   }
 }

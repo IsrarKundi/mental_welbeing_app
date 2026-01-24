@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 
 enum BreathingPhase { inhale, hold, exhale, rest }
@@ -6,13 +7,15 @@ class BreathingController extends GetxController {
   final currentPhase = BreathingPhase.inhale.obs;
   final isPlaying = false.obs;
   final currentCycle = 0.obs;
-  final totalCycles = 4;
 
-  // Phase durations in seconds
-  final inhaleDuration = 4;
-  final holdDuration = 4;
-  final exhaleDuration = 6;
-  final restDuration = 2;
+  // Reactive settings
+  final totalCycles = 4.obs;
+  final inhaleDuration = 4.obs;
+  final holdDuration = 4.obs;
+  final exhaleDuration = 6.obs;
+  final restDuration = 2.obs;
+
+  Timer? _phaseTimer;
 
   String get phaseText {
     switch (currentPhase.value) {
@@ -43,21 +46,44 @@ class BreathingController extends GetxController {
   int get currentPhaseDuration {
     switch (currentPhase.value) {
       case BreathingPhase.inhale:
-        return inhaleDuration;
+        return inhaleDuration.value;
       case BreathingPhase.hold:
-        return holdDuration;
+        return holdDuration.value;
       case BreathingPhase.exhale:
-        return exhaleDuration;
+        return exhaleDuration.value;
       case BreathingPhase.rest:
-        return restDuration;
+        return restDuration.value;
     }
   }
 
   void togglePlay() {
     isPlaying.value = !isPlaying.value;
+    if (isPlaying.value) {
+      _startPhaseTimer();
+    } else {
+      _stopPhaseTimer();
+    }
+  }
+
+  void _startPhaseTimer() {
+    _phaseTimer?.cancel();
+    _phaseTimer = Timer(Duration(seconds: currentPhaseDuration), () {
+      if (isPlaying.value) {
+        nextPhase();
+        if (isPlaying.value) {
+          _startPhaseTimer();
+        }
+      }
+    });
+  }
+
+  void _stopPhaseTimer() {
+    _phaseTimer?.cancel();
+    _phaseTimer = null;
   }
 
   void resetSession() {
+    _stopPhaseTimer();
     isPlaying.value = false;
     currentPhase.value = BreathingPhase.inhale;
     currentCycle.value = 0;
@@ -77,10 +103,38 @@ class BreathingController extends GetxController {
       case BreathingPhase.rest:
         currentPhase.value = BreathingPhase.inhale;
         currentCycle.value++;
-        if (currentCycle.value >= totalCycles) {
+        if (currentCycle.value >= totalCycles.value) {
           isPlaying.value = false;
+          _stopPhaseTimer();
         }
         break;
     }
+  }
+
+  // Settings methods
+  void updateInhaleDuration(int value) {
+    inhaleDuration.value = value.clamp(2, 10);
+  }
+
+  void updateHoldDuration(int value) {
+    holdDuration.value = value.clamp(1, 10);
+  }
+
+  void updateExhaleDuration(int value) {
+    exhaleDuration.value = value.clamp(2, 12);
+  }
+
+  void updateRestDuration(int value) {
+    restDuration.value = value.clamp(1, 6);
+  }
+
+  void updateTotalCycles(int value) {
+    totalCycles.value = value.clamp(1, 10);
+  }
+
+  @override
+  void onClose() {
+    _stopPhaseTimer();
+    super.onClose();
   }
 }

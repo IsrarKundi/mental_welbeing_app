@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -17,173 +19,141 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Get.back(),
         ),
         title: Text(
           'Mindful Walk',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: Colors.white,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
       ),
-      body: Obx(() {
-        final env = controller.currentEnvironment;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(env.color).withOpacity(0.3),
-                const Color(0xFF0F172A),
-              ],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.mainBackgroundGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              _buildTypeSelector(),
+              const Spacer(flex: 1),
+              _buildTimerRing(),
+              const Spacer(flex: 1),
+              _buildMindfulnessPrompt(),
+              const SizedBox(height: 48),
+              _buildControls(),
+              const SizedBox(height: 60),
+            ],
           ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                _buildEnvironmentSelector(),
-                const Spacer(),
-                _buildTimer(),
-                const SizedBox(height: 32),
-                _buildMindfulnessPrompt(),
-                const Spacer(),
-                _buildControls(),
-                const SizedBox(height: 40),
-              ],
-            ),
-          ),
-        );
-      }),
+        ),
+      ),
     );
   }
 
-  Widget _buildEnvironmentSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Choose Your Path',
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 80,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: controller.environments.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final env = controller.environments[index];
-                return Obx(() {
-                  final isSelected =
-                      controller.selectedEnvironment.value == index;
-                  return GestureDetector(
-                    onTap: () => controller.selectEnvironment(index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 80,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Color(env.color).withOpacity(0.3)
-                            : Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? Color(env.color)
-                              : Colors.white.withOpacity(0.1),
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(env.icon, style: const TextStyle(fontSize: 28)),
-                          const SizedBox(height: 4),
-                          Text(
-                            env.name.split(' ').first,
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                });
-              },
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 400.ms);
-  }
-
-  Widget _buildTimer() {
+  Widget _buildTypeSelector() {
     return Obx(() {
-      final env = controller.currentEnvironment;
-      return Column(
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Animated rings
-              ...List.generate(3, (index) {
-                return Container(
-                  width: 200 + (index * 30.0),
-                  height: 200 + (index * 30.0),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Color(env.color).withOpacity(0.1 + (index * 0.05)),
-                      width: 1,
-                    ),
-                  ),
-                );
-              }),
-              // Timer circle
-              Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(env.color).withOpacity(0.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(env.color).withOpacity(0.3),
-                      blurRadius: 30,
-                      spreadRadius: 5,
-                    ),
-                  ],
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: List.generate(controller.environments.length, (index) {
+            final env = controller.environments[index];
+            final isSelected = controller.selectedEnvironment.value == index;
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                controller.selectEnvironment(index);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Color(env.color).withOpacity(0.2)
+                      : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: isSelected
+                        ? Color(env.color).withOpacity(0.5)
+                        : Colors.white.withOpacity(0.1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(env.icon, style: const TextStyle(fontSize: 40)),
-                    const SizedBox(height: 8),
+                    Text(env.icon, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
                     Text(
-                      controller.formattedTime,
+                      env.name,
                       style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.white,
+                        color: isSelected ? Colors.white : Colors.white70,
+                        fontSize: 13,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ],
+            );
+          }),
+        ),
+      );
+    });
+  }
+
+  Widget _buildTimerRing() {
+    return Obx(() {
+      final env = controller.currentEnvironment;
+      return SizedBox(
+        width: 240,
+        height: 240,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(
+              size: const Size(240, 240),
+              painter: MindfulWalkRingPainter(
+                progress: controller.progress,
+                color: Color(env.color),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  controller.formattedTime,
+                  style: GoogleFonts.poppins(
+                    fontSize: 52,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  env.name.toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(env.color),
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
     });
   }
@@ -192,36 +162,47 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
     return Obx(() {
       final env = controller.currentEnvironment;
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 32),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Color(env.color).withOpacity(0.3)),
+          color: Colors.white.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
         ),
         child: Column(
           children: [
-            Icon(Icons.lightbulb_outline, color: Color(env.color), size: 24),
-            const SizedBox(height: 8),
             Text(
-              controller.currentPrompt,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.white,
-                height: 1.4,
-              ),
+                  controller.currentPrompt,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    color: Colors.white.withOpacity(0.8),
+                    height: 1.5,
+                  ),
+                )
+                .animate(key: ValueKey(controller.currentPrompt))
+                .fadeIn(duration: 400.ms)
+                .slideY(begin: 0.1, end: 0),
+            const SizedBox(height: 12),
+            Container(
+              height: 1,
+              width: 30,
+              color: Color(env.color).withOpacity(0.2),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               env.tip,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.white24,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
       );
-    }).animate().fadeIn(delay: 200.ms, duration: 400.ms);
+    });
   }
 
   Widget _buildControls() {
@@ -230,66 +211,110 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Reset
           GestureDetector(
-            onTap: controller.reset,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              controller.reset();
+            },
             child: Container(
-              width: 56,
-              height: 56,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                color: Colors.white.withOpacity(0.08),
               ),
               child: const Icon(
                 Icons.refresh_rounded,
-                color: Colors.white70,
-                size: 28,
+                color: Colors.white54,
+                size: 24,
               ),
             ),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 32),
+          // Play/Pause
           GestureDetector(
             onTap: controller.toggleWalking,
             child: Container(
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(env.color),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(env.color).withOpacity(0.4),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ],
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(env.color), Color(env.color).withOpacity(0.7)],
+                ),
               ),
               child: Icon(
                 controller.isWalking.value
                     ? Icons.pause_rounded
                     : Icons.directions_walk_rounded,
                 color: Colors.white,
-                size: 40,
+                size: 36,
               ),
             ),
           ),
-          const SizedBox(width: 24),
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.1),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-            ),
-            child: const Icon(
-              Icons.volume_up_rounded,
-              color: Colors.white70,
-              size: 28,
+          const SizedBox(width: 32),
+          // Volume
+          GestureDetector(
+            onTap: () => HapticFeedback.lightImpact(),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+              ),
+              child: const Icon(
+                Icons.volume_up_rounded,
+                color: Colors.white54,
+                size: 24,
+              ),
             ),
           ),
         ],
       );
     });
   }
+}
+
+class MindfulWalkRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  MindfulWalkRingPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 8;
+    const strokeWidth = 6.0;
+
+    // Background ring
+    final bgPaint = Paint()
+      ..color = Colors.white.withOpacity(0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Progress arc
+    if (progress > 0.001) {
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      final sweepAngle = 2 * pi * progress;
+
+      final progressPaint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawArc(rect, -pi / 2, sweepAngle, false, progressPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant MindfulWalkRingPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }
