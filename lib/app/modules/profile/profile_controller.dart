@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 
 class ProfileController extends GetxController {
-  final userName = 'Mustafa'.obs;
-  final email = 'mustafa@example.com'.obs;
+  final userName = 'Israr'.obs;
+  final email = 'israr@gmail.com'.obs;
   final joinDate = DateTime(2024, 6, 15).obs;
 
   final notificationsEnabled = true.obs;
@@ -22,18 +22,18 @@ class ProfileController extends GetxController {
       subtitle: '09:00 AM',
       hasArrow: true,
     ),
-    SettingsItem(
-      icon: '🎨',
-      title: 'Appearance',
-      subtitle: 'Dark mode enabled',
-      hasArrow: true,
-    ),
-    SettingsItem(
-      icon: '🔐',
-      title: 'Privacy',
-      subtitle: 'Manage your data',
-      hasArrow: true,
-    ),
+    // SettingsItem(
+    //   icon: '🎨',
+    //   title: 'Appearance',
+    //   subtitle: 'Dark mode enabled',
+    //   hasArrow: true,
+    // ),
+    // SettingsItem(
+    //   icon: '🔐',
+    //   title: 'Privacy',
+    //   subtitle: 'Manage your data',
+    //   hasArrow: true,
+    // ),
     SettingsItem(
       icon: '❓',
       title: 'Help & Support',
