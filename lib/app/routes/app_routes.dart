@@ -13,6 +13,7 @@ abstract class Routes {
   static const YOGA = _Paths.YOGA;
   static const MOOD_HISTORY = _Paths.MOOD_HISTORY;
   static const MAIN_NAV = _Paths.MAIN_NAV;
+  static const CHAT_DETAIL = _Paths.CHAT_DETAIL;
 }
 
 abstract class _Paths {
@@ -28,4 +29,5 @@ abstract class _Paths {
   static const YOGA = '/yoga';
   static const MOOD_HISTORY = '/mood-history';
   static const MAIN_NAV = '/main';
+  static const CHAT_DETAIL = '/chat-detail';
 }

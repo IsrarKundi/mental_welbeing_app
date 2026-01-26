@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 
 import '../../theme/app_colors.dart';
-import '../../widgets/liquid_glass_container.dart';
-import '../../widgets/glass_text_field.dart';
 import 'chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
@@ -18,10 +18,12 @@ class ChatView extends GetView<ChatController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'MindWell',
+          'AI Mentors',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: Colors.white,
+            fontSize: 20,
+            letterSpacing: 1,
           ),
         ),
         centerTitle: true,
@@ -30,96 +32,126 @@ class ChatView extends GetView<ChatController> {
         decoration: const BoxDecoration(
           gradient: AppColors.mainBackgroundGradient,
         ),
-        child: Column(
-          children: [
-            Expanded(
-              child: Obx(() {
-                if (controller.messages.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'Start a conversation...',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white54,
-                        fontSize: 16,
+        child: Obx(() {
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
+            itemCount: controller.mentors.length,
+            itemBuilder: (context, index) {
+              final mentor = controller.mentors[index];
+              return _buildMentorCard(mentor, index);
+            },
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildMentorCard(mentor, int index) {
+    return GestureDetector(
+      onTap: () => controller.startChat(mentor),
+      child:
+          GlassmorphicContainer(
+                width: double.infinity,
+                height: 70,
+                borderRadius: 20,
+                blur: 15,
+                alignment: Alignment.center,
+                border: 1,
+                linearGradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.08),
+                    Colors.white.withOpacity(0.02),
+                  ],
+                ),
+                borderGradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.05),
+                  ],
+                ),
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      // Smaller Avatar
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundImage: NetworkImage(mentor.avatarUrl),
                       ),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
-                  itemCount: controller.messages.length,
-                  itemBuilder: (context, index) {
-                    final message = controller.messages[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Align(
-                        alignment: message.isUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: message.isUser
-                            ? _buildUserBubble(message.text)
-                            : _buildAIBubble(message.text),
+                      const SizedBox(width: 16),
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  mentor.name,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.cyanAccent.withOpacity(
+                                      0.15,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: AppColors.cyanAccent.withOpacity(
+                                        0.2,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    mentor.trait,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.cyanAccent,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              mentor.specialization,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                );
-              }),
-            ),
-            _buildInputArea(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAIBubble(String text) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: Get.width * 0.7),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(color: AppColors.textPrimary, fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildUserBubble(String text) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: Get.width * 0.7),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.tealAccent.withOpacity(0.8),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(4),
-        ),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildInputArea() {
-    final TextEditingController textController = TextEditingController();
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: GlassTextField(
-        controller: textController,
-        hintText: 'Type a message...',
-        onSend: () {
-          controller.sendMessage(textController.text);
-          textController.clear();
-        },
-      ),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white24,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(delay: Duration(milliseconds: 100 * index))
+              .slideX(begin: 0.1, end: 0),
     );
   }
 }

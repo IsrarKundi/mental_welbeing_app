@@ -5,6 +5,7 @@ import '../modules/home/home_binding.dart';
 import '../modules/home/home_view.dart';
 import '../modules/chat/chat_binding.dart';
 import '../modules/chat/chat_view.dart';
+import '../modules/chat/chat_detail_view.dart';
 import '../modules/onboarding/onboarding_binding.dart';
 import '../modules/onboarding/onboarding_view.dart';
 import '../modules/activities/breathing/breathing_binding.dart';
@@ -85,6 +86,11 @@ class AppPages {
       name: _Paths.MAIN_NAV,
       page: () => const MainNavView(),
       binding: MainNavBinding(),
+    ),
+    GetPage(
+      name: _Paths.CHAT_DETAIL,
+      page: () => const ChatDetailView(),
+      binding: ChatBinding(),
     ),
   ];
 }
