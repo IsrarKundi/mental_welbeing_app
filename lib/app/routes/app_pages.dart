@@ -23,6 +23,12 @@ import '../modules/mood_history/mood_history_binding.dart';
 import '../modules/mood_history/mood_history_view.dart';
 import '../modules/main_nav/main_nav_binding.dart';
 import '../modules/main_nav/main_nav_view.dart';
+import '../modules/auth/login/login_binding.dart';
+import '../modules/auth/login/login_view.dart';
+import '../modules/auth/signup/signup_binding.dart';
+import '../modules/auth/signup/signup_view.dart';
+import '../modules/auth/forgot_password/forgot_password_binding.dart';
+import '../modules/auth/forgot_password/forgot_password_view.dart';
 
 part 'app_routes.dart';
 
@@ -30,6 +36,7 @@ class AppPages {
   AppPages._();
 
   static const INITIAL = Routes.ONBOARDING;
+  static const NAV = Routes.MAIN_NAV;
 
   static final routes = [
     GetPage(
@@ -91,6 +98,21 @@ class AppPages {
       name: _Paths.CHAT_DETAIL,
       page: () => const ChatDetailView(),
       binding: ChatBinding(),
+    ),
+    GetPage(
+      name: _Paths.LOGIN,
+      page: () => const LoginView(),
+      binding: LoginBinding(),
+    ),
+    GetPage(
+      name: _Paths.SIGNUP,
+      page: () => const SignupView(),
+      binding: SignupBinding(),
+    ),
+    GetPage(
+      name: _Paths.FORGOT_PASSWORD,
+      page: () => const ForgotPasswordView(),
+      binding: ForgotPasswordBinding(),
     ),
   ];
 }

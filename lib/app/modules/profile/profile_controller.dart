@@ -1,13 +1,34 @@
 import 'package:get/get.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class ProfileController extends GetxController {
-  final userName = 'Israr'.obs;
-  final email = 'israr@gmail.com'.obs;
+  final _authRepo = AuthRepository();
+
+  final userName = 'User'.obs;
+  final email = ''.obs;
   final joinDate = DateTime(2024, 6, 15).obs;
 
   final notificationsEnabled = true.obs;
   final darkMode = true.obs;
   final reminderTime = '09:00 AM'.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadUserData();
+  }
+
+  void _loadUserData() {
+    final user = _authRepo.currentUser;
+    if (user != null) {
+      email.value = user.email ?? '';
+      userName.value = user.userMetadata?['full_name'] ?? 'User';
+    }
+  }
+
+  Future<void> signOut() async {
+    await _authRepo.signOut();
+  }
 
   final settingsItems = [
     SettingsItem(
@@ -22,18 +43,6 @@ class ProfileController extends GetxController {
       subtitle: '09:00 AM',
       hasArrow: true,
     ),
-    // SettingsItem(
-    //   icon: '🎨',
-    //   title: 'Appearance',
-    //   subtitle: 'Dark mode enabled',
-    //   hasArrow: true,
-    // ),
-    // SettingsItem(
-    //   icon: '🔐',
-    //   title: 'Privacy',
-    //   subtitle: 'Manage your data',
-    //   hasArrow: true,
-    // ),
     SettingsItem(
       icon: '❓',
       title: 'Help & Support',

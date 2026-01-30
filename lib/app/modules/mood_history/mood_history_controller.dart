@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../data/repositories/mood_repository.dart';
 
 class MoodHistoryController extends GetxController {
   final selectedDate = DateTime.now().obs;
@@ -7,63 +8,45 @@ class MoodHistoryController extends GetxController {
   // Mock mood data for demo - in real app, this would come from storage
   final moodHistory = <DateTime, MoodEntry>{}.obs;
 
+  final _moodRepo = MoodRepository();
+
   @override
   void onInit() {
     super.onInit();
-    _generateMockData();
+    _fetchMoods();
   }
 
-  void _generateMockData() {
-    final now = DateTime.now();
-    final moods = ['😊', '😌', '😔', '😠', '🥰', '😴'];
-    final moodLabels = ['Happy', 'Calm', 'Sad', 'Angry', 'Loved', 'Tired'];
-    final colors = [
-      0xFFF59E0B, // Happy
-      0xFF0F172A, // Calm (deepOceanBlue)
-      0xFF1E293B, // Sad
-      0xFF991B1B, // Angry
-      0xFFEC4899, // Loved
-      0xFF8B5CF6, // Tired
-    ];
-
-    // Generate random mood data for past 30 days
-    for (int i = 0; i < 30; i++) {
-      final date = DateTime(now.year, now.month, now.day - i);
-      if (i % 3 != 0) {
-        // Skip some days to make it realistic
-        final randomIndex = (date.day + date.month) % moods.length;
+  Future<void> _fetchMoods() async {
+    try {
+      final data = await _moodRepo.getMoods();
+      moodHistory.clear();
+      for (final item in data) {
+        final date = DateTime.parse(item['created_at']);
         moodHistory[_dateKey(date)] = MoodEntry(
           date: date,
-          emoji: moods[randomIndex],
-          label: moodLabels[randomIndex],
-          color: colors[randomIndex],
-          note: _getRandomNote(moodLabels[randomIndex]),
+          emoji: item['emoji'],
+          label: item['label'],
+          color: item['color'],
+          note: item['note'] ?? '',
         );
       }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load mood history.');
     }
   }
 
-  void logMood(String emoji, String label, int color) {
-    final now = DateTime.now();
-    moodHistory[_dateKey(now)] = MoodEntry(
-      date: now,
-      emoji: emoji,
-      label: label,
-      color: color,
-      note: 'Logged from Home',
-    );
-  }
-
-  String _getRandomNote(String mood) {
-    final notes = {
-      'Happy': 'Had a great day at work!',
-      'Calm': 'Meditation helped me relax.',
-      'Sad': 'Missing family today.',
-      'Angry': 'Traffic was terrible.',
-      'Loved': 'Spent time with friends.',
-      'Tired': 'Need more sleep.',
-    };
-    return notes[mood] ?? '';
+  Future<void> logMood(String emoji, String label, int color) async {
+    try {
+      await _moodRepo.logMood(
+        emoji: emoji,
+        label: label,
+        color: color,
+        note: 'Logged from Home',
+      );
+      _fetchMoods(); // Refresh local list
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to save mood.');
+    }
   }
 
   DateTime _dateKey(DateTime date) {

@@ -14,6 +14,9 @@ abstract class Routes {
   static const MOOD_HISTORY = _Paths.MOOD_HISTORY;
   static const MAIN_NAV = _Paths.MAIN_NAV;
   static const CHAT_DETAIL = _Paths.CHAT_DETAIL;
+  static const LOGIN = _Paths.LOGIN;
+  static const SIGNUP = _Paths.SIGNUP;
+  static const FORGOT_PASSWORD = _Paths.FORGOT_PASSWORD;
 }
 
 abstract class _Paths {
@@ -30,4 +33,7 @@ abstract class _Paths {
   static const MOOD_HISTORY = '/mood-history';
   static const MAIN_NAV = '/main';
   static const CHAT_DETAIL = '/chat-detail';
+  static const LOGIN = '/login';
+  static const SIGNUP = '/signup';
+  static const FORGOT_PASSWORD = '/forgot-password';
 }

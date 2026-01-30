@@ -223,7 +223,7 @@ class ProfileView extends GetView<ProfileController> {
   Widget _buildSignOutLink() {
     return Center(
       child: TextButton(
-        onPressed: () {},
+        onPressed: controller.signOut,
         child: Text(
           'Log out of Account',
           style: GoogleFonts.poppins(

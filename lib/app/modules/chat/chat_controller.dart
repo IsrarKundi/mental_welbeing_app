@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../data/repositories/chat_repository.dart';
 import '../../data/models/message_model.dart';
 import '../../data/models/chat_mentor_model.dart';
 
@@ -6,6 +7,8 @@ class ChatController extends GetxController {
   final mentors = <ChatMentor>[].obs;
   final activeMentor = Rxn<ChatMentor>();
   final messages = <Message>[].obs;
+
+  final _chatRepo = ChatRepository();
 
   @override
   void onInit() {
@@ -62,22 +65,65 @@ class ChatController extends GetxController {
     ]);
   }
 
-  void startChat(ChatMentor mentor) {
+  Future<void> startChat(ChatMentor mentor) async {
     activeMentor.value = mentor;
     messages.clear();
-    messages.add(
-      Message(
-        text: mentor.welcomeMessage,
-        isUser: false,
-        timestamp: DateTime.now(),
-      ),
-    );
+
+    // Load History from Supabase
+    try {
+      final history = await _chatRepo.getMessages(mentor.id);
+      if (history.isEmpty) {
+        // Only add welcome message if no history exists
+        final welcomeMsg = Message(
+          text: mentor.welcomeMessage,
+          isUser: false,
+          timestamp: DateTime.now(),
+        );
+        messages.add(welcomeMsg);
+        await _chatRepo.saveMessage(
+          mentorId: mentor.id,
+          text: mentor.welcomeMessage,
+          isUser: false,
+        );
+      } else {
+        for (final item in history) {
+          messages.add(
+            Message(
+              text: item['message_text'],
+              isUser: item['is_user'],
+              timestamp: DateTime.parse(item['created_at']),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to load chat history.');
+    }
+
     Get.toNamed('/chat-detail');
   }
 
-  void sendMessage(String text) {
+  Future<void> sendMessage(String text) async {
     if (text.isEmpty) return;
-    messages.add(Message(text: text, isUser: true, timestamp: DateTime.now()));
+    final mentor = activeMentor.value;
+    if (mentor == null) return;
+
+    final userMessage = Message(
+      text: text,
+      isUser: true,
+      timestamp: DateTime.now(),
+    );
+    messages.add(userMessage);
+
+    try {
+      await _chatRepo.saveMessage(
+        mentorId: mentor.id,
+        text: text,
+        isUser: true,
+      );
+    } catch (e) {
+      print('Error saving message: $e');
+    }
 
     // Simulate Personality-Driven AI response
     _simulateAIResponse(text);
@@ -87,7 +133,7 @@ class ChatController extends GetxController {
     final mentor = activeMentor.value;
     if (mentor == null) return;
 
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () async {
       String response = "I'm listening. Tell me more about that.";
 
       // Simple personality logic
@@ -104,9 +150,22 @@ class ChatController extends GetxController {
             "Observe that feeling. Where do you feel it in your body right now?";
       }
 
-      messages.add(
-        Message(text: response, isUser: false, timestamp: DateTime.now()),
+      final aiMessage = Message(
+        text: response,
+        isUser: false,
+        timestamp: DateTime.now(),
       );
+      messages.add(aiMessage);
+
+      try {
+        await _chatRepo.saveMessage(
+          mentorId: mentor.id,
+          text: response,
+          isUser: false,
+        );
+      } catch (e) {
+        print('Error saving AI response: $e');
+      }
     });
   }
 }
