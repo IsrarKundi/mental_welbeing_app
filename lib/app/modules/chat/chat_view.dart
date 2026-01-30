@@ -78,10 +78,12 @@ class ChatView extends GetView<ChatController> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      // Smaller Avatar
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundImage: NetworkImage(mentor.avatarUrl),
+                      Hero(
+                        tag: 'mentor_avatar_${mentor.id}',
+                        child: CircleAvatar(
+                          radius: 24,
+                          backgroundImage: NetworkImage(mentor.avatarUrl),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       // Info

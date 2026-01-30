@@ -25,7 +25,7 @@ class GlassTextField extends StatelessWidget {
     return LiquidGlassContainer(
       height: height,
       borderRadius: borderRadius,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.only(left: 20, right: 4),
       child: Row(
         children: [
           Expanded(
@@ -37,7 +37,7 @@ class GlassTextField extends StatelessWidget {
                 hintText: hintText,
                 hintStyle: GoogleFonts.poppins(color: Colors.white54),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 0),
               ),
             ),
           ),
