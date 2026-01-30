@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../theme/app_colors.dart';
 import 'profile_controller.dart';
 
@@ -28,7 +30,7 @@ class ProfileView extends GetView<ProfileController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 40),
-                    _buildArchitecturalHeader(),
+                    _buildArchitecturalHeader(context),
                     const SizedBox(height: 32),
                     _buildInsightRail(),
                     const SizedBox(height: 60),
@@ -48,7 +50,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildArchitecturalHeader() {
+  Widget _buildArchitecturalHeader(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -99,29 +101,133 @@ class ProfileView extends GetView<ProfileController> {
             ],
           ),
         ),
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.05),
-            image: controller.avatarUrl.value != null
-                ? DecorationImage(
-                    image: NetworkImage(controller.avatarUrl.value!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1.5,
-            ),
+        GestureDetector(
+          onTap: () => _showImageSourceSheet(context),
+          child: Stack(
+            children: [
+              Container(
+                width: 80.r,
+                height: 80.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.05),
+                  image: controller.avatarUrl.value != null
+                      ? DecorationImage(
+                          image: NetworkImage(controller.avatarUrl.value!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1.5,
+                  ),
+                ),
+                child: controller.avatarUrl.value == null
+                    ? Icon(Icons.person, color: Colors.white24, size: 36.sp)
+                    : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: EdgeInsets.all(6.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.cyanAccent,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF0F172A),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    size: 14.sp,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
           ),
-          child: controller.avatarUrl.value == null
-              ? const Icon(Icons.person, color: Colors.white24, size: 32)
-              : null,
         ),
       ],
     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0);
+  }
+
+  void _showImageSourceSheet(BuildContext context) {
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.r),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Change Profile Picture',
+              style: GoogleFonts.poppins(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            _buildSourceOption(
+              icon: Icons.camera_alt_rounded,
+              title: 'Take a Photo',
+              onTap: () {
+                Get.back();
+                controller.pickAndUploadAvatar(ImageSource.camera);
+              },
+            ),
+            SizedBox(height: 16.h),
+            _buildSourceOption(
+              icon: Icons.photo_library_rounded,
+              title: 'Choose from Gallery',
+              onTap: () {
+                Get.back();
+                controller.pickAndUploadAvatar(ImageSource.gallery);
+              },
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourceOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.cyanAccent, size: 20.sp),
+            SizedBox(width: 16.w),
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildInsightRail() {

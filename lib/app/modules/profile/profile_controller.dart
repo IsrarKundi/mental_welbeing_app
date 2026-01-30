@@ -1,8 +1,13 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/profile_repository.dart';
 import '../../data/repositories/mood_repository.dart';
 import '../../data/repositories/activity_repository.dart';
+import '../../theme/app_colors.dart';
 
 class ProfileController extends GetxController {
   final _authRepo = AuthRepository();
@@ -136,6 +141,57 @@ class ProfileController extends GetxController {
       'Dec',
     ];
     return 'Member since ${months[joinDate.value.month - 1]} ${joinDate.value.year}';
+  }
+
+  Future<void> pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Edit Avatar',
+            toolbarColor: const Color(0xFF0F172A),
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Edit Avatar',
+            aspectRatioLockEnabled: true,
+            resetButtonHidden: true,
+          ),
+        ],
+      );
+
+      if (croppedFile == null) return;
+
+      isLoading.value = true;
+      final newUrl = await _profileRepo.uploadAvatar(File(croppedFile.path));
+      avatarUrl.value = newUrl;
+
+      Get.snackbar(
+        'Success',
+        'Profile picture updated successfully!',
+        backgroundColor: AppColors.cyanAccent.withOpacity(0.1),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update profile picture.');
+      print('Avatar upload error: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void toggleNotifications() {
