@@ -66,28 +66,30 @@ class ProgressView extends GetView<ProgressController> {
   }
 
   Widget _buildSummaryGrid() {
-    return Row(
-          children: [
-            Expanded(
-              child: _buildInsightCard(
-                'Current Streak',
-                '${controller.currentStreak.value}',
-                'Days',
-                '🔥',
-                AppColors.cyanAccent,
+    return Obx(
+          () => Row(
+            children: [
+              Expanded(
+                child: _buildInsightCard(
+                  'Current Streak',
+                  '${controller.currentStreak.value}',
+                  'Days',
+                  '🔥',
+                  AppColors.cyanAccent,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildInsightCard(
-                'Total Sessions',
-                '${controller.totalSessions.value}',
-                'Completed',
-                '🧘',
-                const Color(0xFF8B5CF6),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildInsightCard(
+                  'Total Sessions',
+                  '${controller.totalSessions.value}',
+                  'Completed',
+                  '🧘',
+                  const Color(0xFF8B5CF6),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         )
         .animate()
         .fadeIn(delay: 200.ms, duration: 400.ms)
@@ -237,9 +239,11 @@ class ProgressView extends GetView<ProgressController> {
                   ),
                 ),
                 SizedBox(height: 12.h),
-                _buildMiniStat(
-                  'TOTAL WELLNESS TIME',
-                  '${controller.totalMinutes.value} min',
+                Obx(
+                  () => _buildMiniStat(
+                    'TOTAL WELLNESS TIME',
+                    '${controller.totalMinutes.value} min',
+                  ),
                 ),
               ],
             ),

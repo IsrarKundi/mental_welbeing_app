@@ -1,16 +1,18 @@
 import 'package:get/get.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/profile_repository.dart';
+import '../../data/models/user_profile_model.dart';
 
 class ProfileController extends GetxController {
   final _authRepo = AuthRepository();
+  final _profileRepo = ProfileRepository();
 
   final userName = 'User'.obs;
   final email = ''.obs;
-  final joinDate = DateTime(2024, 6, 15).obs;
-
+  final avatarUrl = RxnString();
+  final joinDate = DateTime.now().obs;
+  final isLoading = false.obs;
   final notificationsEnabled = true.obs;
-  final darkMode = true.obs;
-  final reminderTime = '09:00 AM'.obs;
 
   @override
   void onInit() {
@@ -18,16 +20,32 @@ class ProfileController extends GetxController {
     _loadUserData();
   }
 
-  void _loadUserData() {
-    final user = _authRepo.currentUser;
-    if (user != null) {
-      email.value = user.email ?? '';
-      userName.value = user.userMetadata?['full_name'] ?? 'User';
+  Future<void> _loadUserData() async {
+    isLoading.value = true;
+    try {
+      final user = _authRepo.currentUser;
+      if (user != null) {
+        email.value = user.email ?? '';
+
+        final profile = await _profileRepo.getProfile();
+        userName.value = profile.fullName ?? 'User';
+        avatarUrl.value = profile.avatarUrl;
+        joinDate.value = profile.updatedAt; // Using updatedAt as proxy for now
+      }
+    } catch (e) {
+      print('Error loading profile: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 
   Future<void> signOut() async {
-    await _authRepo.signOut();
+    try {
+      await _authRepo.signOut();
+      Get.offAllNamed('/login'); // Redirect to login
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to sign out.');
+    }
   }
 
   final settingsItems = [

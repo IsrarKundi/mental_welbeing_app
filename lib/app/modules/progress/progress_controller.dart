@@ -1,13 +1,51 @@
 import 'package:get/get.dart';
+import '../../data/repositories/mood_repository.dart';
 
 class ProgressController extends GetxController {
-  final currentStreak = 7.obs;
-  final longestStreak = 14.obs;
-  final totalSessions = 42.obs;
-  final totalMinutes = 380.obs;
+  final _moodRepo = MoodRepository();
+
+  final currentStreak = 0.obs;
+  final longestStreak = 0.obs;
+  final totalSessions = 0.obs;
+  final totalMinutes = 0.obs;
 
   final weeklyGoal = 5.obs;
-  final weeklyProgress = 3.obs;
+  final weeklyProgress = 0.obs;
+
+  final moodDistribution = <String, int>{}.obs;
+  final isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    isLoading.value = true;
+    try {
+      final stats = await _moodRepo.getMoodStats();
+      moodDistribution.value = stats;
+
+      // Calculate totals from mood logs for now
+      int total = 0;
+      stats.forEach((key, value) => total += value);
+      totalSessions.value = total;
+
+      // Weekly progress based on moods logged this week
+      final moods = await _moodRepo.getMoods();
+      final now = DateTime.now();
+      final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
+      final thisWeekMoods = moods
+          .where((m) => m.createdAt.isAfter(startOfWeek))
+          .length;
+      weeklyProgress.value = thisWeekMoods;
+    } catch (e) {
+      print('Error fetching stats: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   final achievements = [
     Achievement(

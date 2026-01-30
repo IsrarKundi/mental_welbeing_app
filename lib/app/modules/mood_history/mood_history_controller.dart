@@ -1,11 +1,11 @@
 import 'package:get/get.dart';
 import '../../data/repositories/mood_repository.dart';
+import '../../data/models/mood_entry_model.dart';
 
 class MoodHistoryController extends GetxController {
   final selectedDate = DateTime.now().obs;
   final currentMonth = DateTime.now().obs;
 
-  // Mock mood data for demo - in real app, this would come from storage
   final moodHistory = <DateTime, MoodEntry>{}.obs;
 
   final _moodRepo = MoodRepository();
@@ -20,15 +20,8 @@ class MoodHistoryController extends GetxController {
     try {
       final data = await _moodRepo.getMoods();
       moodHistory.clear();
-      for (final item in data) {
-        final date = DateTime.parse(item['created_at']);
-        moodHistory[_dateKey(date)] = MoodEntry(
-          date: date,
-          emoji: item['emoji'],
-          label: item['label'],
-          color: item['color'],
-          note: item['note'] ?? '',
-        );
+      for (final entry in data) {
+        moodHistory[_dateKey(entry.createdAt)] = entry;
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load mood history.');
@@ -141,20 +134,4 @@ class MoodHistoryController extends GetxController {
   }
 
   int get totalLoggedDays => moodHistory.length;
-}
-
-class MoodEntry {
-  final DateTime date;
-  final String emoji;
-  final String label;
-  final int color;
-  final String note;
-
-  MoodEntry({
-    required this.date,
-    required this.emoji,
-    required this.label,
-    required this.color,
-    this.note = '',
-  });
 }

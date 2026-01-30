@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../theme/app_colors.dart';
 import '../../routes/app_pages.dart';
 import '../mood_history/mood_history_controller.dart';
+import '../../data/repositories/mood_repository.dart';
 
 enum ActivityType {
   breathing,
@@ -147,21 +148,39 @@ class HomeController extends GetxController {
 
   LinearGradient get currentGradient => moods[currentMoodIndex.value].gradient;
 
-  void setMood(int index) {
+  Future<void> setMood(int index) async {
     currentMoodIndex.value = index;
     final mood = moods[index];
 
     // Add to history
     try {
-      final historyController = Get.find<MoodHistoryController>();
-      historyController.logMood(
-        mood.emoji,
-        mood.label,
-        mood.gradient.colors.first.value,
+      // We can use the repository directly or via history controller
+      // Direct use is better for Home specific logging
+      final moodRepo = MoodRepository();
+      await moodRepo.logMood(
+        emoji: mood.emoji,
+        label: mood.label,
+        color: mood.gradient.colors.first.value,
+        note: 'Logged from Home',
+      );
+
+      // Notify history controller to refresh if it exists
+      if (Get.isRegistered<MoodHistoryController>()) {
+        Get.find<MoodHistoryController>().onInit(); // Simple refresh
+      }
+
+      Get.snackbar(
+        'Success',
+        'Your mood "${mood.label}" has been logged!',
+        backgroundColor: Colors.white.withOpacity(0.2),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(20),
+        duration: const Duration(seconds: 2),
       );
     } catch (e) {
-      // MoodHistoryController might not be in memory if we aren't in MainNav
-      print('MoodHistoryController not found: $e');
+      print('Error logging mood: $e');
+      Get.snackbar('Error', 'Failed to save mood to your history.');
     }
   }
 

@@ -44,75 +44,86 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   Widget _buildArchitecturalHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                controller.userName.value,
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -1,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                controller.email.value.toLowerCase(),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white60,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.cyanAccent.withOpacity(0.3),
-                  ),
-                ),
-                child: Text(
-                  controller.memberSince.toUpperCase(),
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(
+          child: CircularProgressIndicator(color: Colors.white24),
+        );
+      }
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  controller.userName.value,
                   style: GoogleFonts.poppins(
-                    fontSize: 10,
+                    fontSize: 32,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.cyanAccent,
-                    letterSpacing: 1,
+                    color: Colors.white,
+                    letterSpacing: -1,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: const DecorationImage(
-              image: NetworkImage(
-                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-              ),
-              fit: BoxFit.cover,
+                const SizedBox(height: 4),
+                Text(
+                  controller.email.value.toLowerCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.white60,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.cyanAccent.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    controller.memberSince.toUpperCase(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.cyanAccent,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1.5,
-            ),
           ),
-        ),
-      ],
-    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0);
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.05),
+              image: controller.avatarUrl.value != null
+                  ? DecorationImage(
+                      image: NetworkImage(controller.avatarUrl.value!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1.5,
+              ),
+            ),
+            child: controller.avatarUrl.value == null
+                ? const Icon(Icons.person, color: Colors.white24, size: 32)
+                : null,
+          ),
+        ],
+      );
+    }).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0);
   }
 
   Widget _buildInsightRail() {

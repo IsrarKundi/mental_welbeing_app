@@ -284,7 +284,7 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
                       ),
                     ],
                   ),
-                  if (mood.note.isNotEmpty) ...[
+                  if (mood.note != null && mood.note!.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -298,7 +298,7 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              mood.note,
+                              mood.note!,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.white70,
