@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../theme/app_colors.dart';
 import '../home/home_view.dart';
@@ -50,16 +51,16 @@ class MainNavView extends GetView<MainNavController> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.white.withOpacity(0.12),
-                        Colors.white.withOpacity(0.04),
+                        Colors.white.withOpacity(0.1),
+                        Colors.white.withOpacity(0.1),
                       ],
                     ),
                     borderGradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.white.withOpacity(0.1),
-                        Colors.white.withOpacity(0.05),
+                        Colors.white.withOpacity(0.2),
+                        Colors.white.withOpacity(0.2),
                       ],
                     ),
                     child: Padding(
@@ -67,10 +68,10 @@ class MainNavView extends GetView<MainNavController> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildNavItem(0, Icons.home_rounded, 'Home'),
-                          _buildNavItem(1, Icons.insights_rounded, 'Stats'),
-                          _buildNavItem(2, Icons.chat_bubble_rounded, 'Chat'),
-                          _buildNavItem(3, Icons.person_rounded, 'Profile'),
+                          _buildNavItem(0, LucideIcons.home, 'Home'),
+                          _buildNavItem(1, LucideIcons.barChartBig, 'Stats'),
+                          _buildNavItem(2, LucideIcons.messageCircle, 'Chat'),
+                          _buildNavItem(3, LucideIcons.user, 'Profile'),
                         ],
                       ),
                     ),

@@ -68,10 +68,11 @@ class _MoodCheckinSheetState extends State<MoodCheckinSheet> {
                       gradient: widget.mood.gradient,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Center(
-                      child: Text(
-                        widget.mood.emoji,
-                        style: const TextStyle(fontSize: 28),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(
+                        widget.mood.iconUrl,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),

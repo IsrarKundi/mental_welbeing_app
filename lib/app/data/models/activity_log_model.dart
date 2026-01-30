@@ -14,12 +14,16 @@ class ActivityLog {
   });
 
   factory ActivityLog.fromJson(Map<String, dynamic> json) {
+    // Supabase returns timestamps in UTC, parse explicitly as UTC
+    final rawTimestamp = json['created_at'] as String;
+    final utcTime = DateTime.parse(rawTimestamp).toUtc();
+
     return ActivityLog(
       id: json['id'],
       userId: json['user_id'],
       activityType: json['activity_type'],
       durationMinutes: json['duration_minutes'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: utcTime.toLocal(),
     );
   }
 

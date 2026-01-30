@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/app_colors.dart';
 import 'profile_controller.dart';
 
@@ -16,32 +17,31 @@ class ProfileView extends GetView<ProfileController> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppColors.mainBackgroundGradient,
         ),
-        child: SafeArea(
-          child: Obx(
-            () => Skeletonizer(
-              enabled: controller.isLoading.value,
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    _buildArchitecturalHeader(context),
-                    const SizedBox(height: 32),
-                    _buildInsightRail(),
-                    const SizedBox(height: 60),
-                    _buildCategoryLabel('GENERAL'),
-                    const SizedBox(height: 24),
-                    ..._buildSettingsRail(),
-                    const SizedBox(height: 48),
-                    _buildSignOutLink(),
-                    const SizedBox(height: 120),
-                  ],
-                ),
+        child: Obx(
+          () => Skeletonizer(
+            enabled: controller.isLoading.value,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 50.h),
+                  _buildArchitecturalHeader(context),
+                  SizedBox(height: 32.h),
+                  _buildInsightRail(),
+                  SizedBox(height: 32.h),
+                  _buildCategoryLabel('Settings'),
+                  SizedBox(height: 16.h),
+                  ..._buildSettingsRail(),
+                  SizedBox(height: 40.h),
+                  _buildSignOutLink(),
+                  SizedBox(height: 100.h), // Space for FAB/Navbar
+                ],
               ),
             ),
           ),
@@ -111,20 +111,53 @@ class ProfileView extends GetView<ProfileController> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white.withOpacity(0.05),
-                  image: controller.avatarUrl.value != null
-                      ? DecorationImage(
-                          image: NetworkImage(controller.avatarUrl.value!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
                   border: Border.all(
                     color: Colors.white.withOpacity(0.1),
                     width: 1.5,
                   ),
                 ),
-                child: controller.avatarUrl.value == null
-                    ? Icon(Icons.person, color: Colors.white24, size: 36.sp)
-                    : null,
+                child: ClipOval(
+                  child: Obx(() {
+                    final imageUrl = controller.avatarUrl.value;
+                    if (imageUrl == null || imageUrl.isEmpty) {
+                      return Icon(
+                        LucideIcons.user,
+                        color: Colors.white24,
+                        size: 36.sp,
+                      );
+                    }
+                    return Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          LucideIcons.user,
+                          color: Colors.white24,
+                          size: 36.sp,
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                  : null,
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Colors.white24,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
               ),
               Positioned(
                 bottom: 0,

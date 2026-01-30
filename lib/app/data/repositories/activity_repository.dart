@@ -13,26 +13,29 @@ class ActivityRepository {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
-    // Check if already performed today (calendar day)
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+    // Use client's UTC time for global timezone support
+    final nowUtc = DateTime.now().toUtc();
+    final todayStartUtc = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
 
+    // Check if already performed today (using UTC)
     final existing = await _supabase
         .from('activity_logs')
         .select()
         .eq('user_id', user.id)
         .eq('activity_type', activityType)
-        .gte('created_at', todayStart);
+        .gte('created_at', todayStartUtc.toIso8601String());
 
     if ((existing as List).isNotEmpty) {
       print('Activity $activityType already logged today. Skipping.');
       return;
     }
 
+    // Send client's UTC timestamp instead of relying on server clock
     await _supabase.from('activity_logs').insert({
       'user_id': user.id,
       'activity_type': activityType,
       'duration_minutes': durationMinutes,
+      'created_at': nowUtc.toIso8601String(),
     });
   }
 
@@ -43,6 +46,7 @@ class ActivityRepository {
     final response = await _supabase
         .from('activity_logs')
         .select()
+        .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
     return (response as List)

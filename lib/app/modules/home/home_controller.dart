@@ -196,7 +196,7 @@ class HomeController extends GetxController {
       emoji: '😰',
       label: 'Anxious',
       gradient: AppColors.anxiousGradient,
-      iconUrl: 'assets/images/characters/calm.png', // Reuse calm as placeholder
+      iconUrl: 'assets/images/characters/anxious.png',
       suggestedActivityTitle: 'Breathing Exercise',
       suggestedActivityRoute: Routes.BREATHING,
       suggestedActivityMessage: 'Slow, deep breaths to calm your nerves.',
@@ -205,8 +205,7 @@ class HomeController extends GetxController {
       emoji: '😩',
       label: 'Stressed',
       gradient: AppColors.stressedGradient,
-      iconUrl:
-          'assets/images/characters/tired.png', // Reuse tired as placeholder
+      iconUrl: 'assets/images/characters/stressed.png',
       suggestedActivityTitle: 'Mindful Walk',
       suggestedActivityRoute: Routes.MINDFUL_WALK,
       suggestedActivityMessage: 'Step outside and clear your mind.',
@@ -215,7 +214,7 @@ class HomeController extends GetxController {
       emoji: '😐',
       label: 'Neutral',
       gradient: AppColors.neutralGradient,
-      iconUrl: 'assets/images/characters/calm.png', // Reuse calm as placeholder
+      iconUrl: 'assets/images/characters/neutral.png',
       suggestedActivityTitle: 'Daily Journal',
       suggestedActivityRoute: Routes.JOURNAL,
       suggestedActivityMessage:

@@ -18,6 +18,10 @@ class MoodEntry {
   });
 
   factory MoodEntry.fromJson(Map<String, dynamic> json) {
+    // Supabase returns timestamps in UTC, parse explicitly as UTC
+    final rawTimestamp = json['created_at'] as String;
+    final utcTime = DateTime.parse(rawTimestamp).toUtc();
+
     return MoodEntry(
       id: json['id'],
       userId: json['user_id'],
@@ -25,7 +29,7 @@ class MoodEntry {
       label: json['label'],
       color: (json['color'] as int).toUnsigned(32),
       note: json['note'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: utcTime.toLocal(),
     );
   }
 

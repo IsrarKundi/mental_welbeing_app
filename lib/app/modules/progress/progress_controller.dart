@@ -37,16 +37,10 @@ class ProgressController extends GetxController {
       final activities = await _activityRepo.getActivities();
       final moods = await _moodRepo.getMoods();
 
-      print(
-        'DEBUG: Fetched ${activities.length} activities and ${moods.length} moods',
-      );
-
       // Combined sessions
       totalSessions.value =
           moodStats.values.fold(0, (sum, count) => sum + count) +
           activities.length;
-
-      print('DEBUG: Total sessions calculated: ${totalSessions.value}');
 
       // Total Wellness Time
       totalMinutes.value = activities.fold(
@@ -60,10 +54,15 @@ class ProgressController extends GetxController {
       // Daily Progress (Today only)
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final dailyCount =
-          moods.where((m) => m.createdAt.isAfter(today)).length +
-          activities.where((a) => a.createdAt.isAfter(today)).length;
-      dailyProgress.value = dailyCount;
+
+      final dailyMoods = moods
+          .where((m) => !m.createdAt.isBefore(today))
+          .length;
+      final dailyActivities = activities
+          .where((a) => !a.createdAt.isBefore(today))
+          .length;
+
+      dailyProgress.value = dailyMoods + dailyActivities;
 
       // Update Achievements based on REAL stats
       _updateAchievements(moods.length + activities.length);
@@ -74,7 +73,7 @@ class ProgressController extends GetxController {
       // Weekly Chart Data
       _calculateWeeklyChartData(moods, activities);
     } catch (e) {
-      print('Error fetching stats: $e');
+      // Error fetching stats
     } finally {
       isLoading.value = false;
     }
@@ -96,18 +95,26 @@ class ProgressController extends GetxController {
       final activityCount = activities
           .where(
             (a) =>
-                a.createdAt.isAfter(dayStart) && a.createdAt.isBefore(dayEnd),
+                !a.createdAt.isBefore(dayStart) && a.createdAt.isBefore(dayEnd),
           )
           .length;
       final moodCount = moods
           .where(
             (m) =>
-                m.createdAt.isAfter(dayStart) && m.createdAt.isBefore(dayEnd),
+                !m.createdAt.isBefore(dayStart) && m.createdAt.isBefore(dayEnd),
           )
           .length;
 
-      data[6 - i] = activityCount + moodCount;
-      dayLabels.add(['S', 'M', 'T', 'W', 'T', 'F', 'S'][date.weekday % 7]);
+      final total = activityCount + moodCount;
+      data[6 - i] = total;
+
+      // weekday: 1=Mon, 2=Tue, ..., 7=Sun
+      final dayLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][date.weekday - 1];
+      dayLabels.add(dayLabel);
+
+      if (i <= 1) {
+        // Only log last 2 days for brevity
+      }
     }
 
     weeklyActivityData.value = data;
@@ -122,6 +129,8 @@ class ProgressController extends GetxController {
         icon: '🎯',
         isUnlocked: total >= 1,
         color: 0xFF22C55E,
+        current: total.clamp(0, 1),
+        target: 1,
       ),
       Achievement(
         title: 'Week Warrior',
@@ -129,6 +138,8 @@ class ProgressController extends GetxController {
         icon: '🔥',
         isUnlocked: currentStreak.value >= 7,
         color: 0xFFF59E0B,
+        current: currentStreak.value.clamp(0, 7),
+        target: 7,
       ),
       Achievement(
         title: 'Mindful Master',
@@ -136,6 +147,8 @@ class ProgressController extends GetxController {
         icon: '🧘',
         isUnlocked: total >= 30,
         color: 0xFF8B5CF6,
+        current: total.clamp(0, 30),
+        target: 30,
       ),
       Achievement(
         title: 'Elite Tracker',
@@ -143,6 +156,8 @@ class ProgressController extends GetxController {
         icon: '🏆',
         isUnlocked: total >= 100,
         color: 0xFF6366F1,
+        current: total.clamp(0, 100),
+        target: 100,
       ),
       Achievement(
         title: 'Wellness Guru',
@@ -150,8 +165,19 @@ class ProgressController extends GetxController {
         icon: '💎',
         isUnlocked: totalMinutes.value >= 600,
         color: 0xFFEC4899,
+        current: totalMinutes.value.clamp(0, 600),
+        target: 600,
       ),
     ];
+
+    // Sort: unlocked first, then by progress percentage
+    achievements.sort((a, b) {
+      if (a.isUnlocked && !b.isUnlocked) return -1;
+      if (!a.isUnlocked && b.isUnlocked) return 1;
+      return b.progress.compareTo(
+        a.progress,
+      ); // Higher progress first among locked
+    });
   }
 
   void _calculateStreaks(List<dynamic> moods, List<dynamic> activities) {
@@ -203,7 +229,7 @@ class ProgressController extends GetxController {
   void _populateRecentJourney(List<dynamic> moods, List<dynamic> activities) {
     final list = <RecentActivity>[];
 
-    // Add activities
+    // Add activities only (not moods)
     for (var a in activities.take(10)) {
       final type = a.activityType.toString();
       final capitalizedTitle = type.isNotEmpty
@@ -221,26 +247,9 @@ class ProgressController extends GetxController {
       );
     }
 
-    // Add moods
-    for (var m in moods.take(10)) {
-      list.add(
-        RecentActivity(
-          title: 'Mood: ${m.label}',
-          date: m.createdAt,
-          duration: m.emoji,
-          icon: m.emoji,
-          type: 'Mood',
-        ),
-      );
-    }
-
-    // Sort combined list by date
+    // Sort by date (newest first)
     list.sort((a, b) => b.date.compareTo(a.date));
     recentActivities.value = list.take(6).toList();
-
-    print(
-      'DEBUG: Recent journey populated with ${recentActivities.length} items',
-    );
   }
 
   String _getIconForActivity(String type) {
@@ -276,6 +285,8 @@ class Achievement {
   final String icon;
   final bool isUnlocked;
   final int color;
+  final int current; // Current progress
+  final int target; // Target to unlock
 
   Achievement({
     required this.title,
@@ -283,7 +294,11 @@ class Achievement {
     required this.icon,
     required this.isUnlocked,
     required this.color,
+    required this.current,
+    required this.target,
   });
+
+  double get progress => target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
 }
 
 class RecentActivity {

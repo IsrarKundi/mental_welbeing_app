@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/app_colors.dart';
 import '../../routes/app_pages.dart';
 import 'home_controller.dart';
@@ -86,21 +88,6 @@ class HomeView extends GetView<HomeController> {
         ),
         Row(
           children: [
-            // IconButton(
-            //   onPressed: () => Get.toNamed(Routes.CHAT),
-            //   icon: Container(
-            //     padding: const EdgeInsets.all(8),
-            //     decoration: BoxDecoration(
-            //       color: Colors.white.withOpacity(0.1),
-            //       shape: BoxShape.circle,
-            //     ),
-            //     child: const Icon(
-            //       Icons.chat_bubble_outline,
-            //       color: Colors.white,
-            //       size: 20,
-            //     ),
-            //   ),
-            // ),
             const SizedBox(width: 8),
             Container(
               width: 45,
@@ -111,14 +98,49 @@ class HomeView extends GetView<HomeController> {
                   color: Colors.white.withOpacity(0.2),
                   width: 2,
                 ),
-                image: DecorationImage(
-                  image: controller.profileImageUrl.value.isNotEmpty
-                      ? NetworkImage(controller.profileImageUrl.value)
-                      : const NetworkImage(
-                          'https://ui-avatars.com/api/?name=User&background=random',
+                color: Colors.white.withOpacity(0.1),
+              ),
+              child: ClipOval(
+                child: Obx(() {
+                  final imageUrl = controller.profileImageUrl.value;
+                  if (imageUrl.isEmpty) {
+                    return const Icon(
+                      LucideIcons.user,
+                      color: Colors.white70,
+                      size: 24,
+                    );
+                  }
+                  return Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        LucideIcons.user,
+                        color: Colors.white70,
+                        size: 24,
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                : null,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.white54,
+                            ),
+                          ),
                         ),
-                  fit: BoxFit.cover,
-                ),
+                      );
+                    },
+                  );
+                }),
               ),
             ),
           ],
@@ -235,41 +257,42 @@ class HomeView extends GetView<HomeController> {
               Row(
                 children: [
                   // Streak Badge
-                  Obx(
-                    () => controller.moodStreak.value > 0
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  '🔥',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${controller.moodStreak.value}',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
+                  // Obx(
+                  //   () => controller.moodStreak.value > 0
+                  //       ? Container(
+                  //           padding: const EdgeInsets.symmetric(
+                  //             horizontal: 10,
+                  //             vertical: 6,
+                  //           ),
+                  //           margin: const EdgeInsets.only(right: 8),
+                  //           decoration: BoxDecoration(
+                  //             gradient: const LinearGradient(
+                  //               colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                  //             ),
+                  //             borderRadius: BorderRadius.circular(20),
+                  //           ),
+                  //           child: Row(
+                  //             mainAxisSize: MainAxisSize.min,
+                  //             children: [
+                  //               const Text(
+                  //                 '🔥',
+                  //                 style: TextStyle(fontSize: 12),
+                  //               ),
+                  //               const SizedBox(width: 4),
+                  //               Text(
+                  //                 '${controller.moodStreak.value}',
+                  //                 style: GoogleFonts.poppins(
+                  //                   fontSize: 12,
+                  //                   fontWeight: FontWeight.w600,
+                  //                   color: Colors.white,
+                  //                 ),
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         )
+                  //       : const SizedBox.shrink(),
+                  // ),
+
                   // History Button
                   GestureDetector(
                     onTap: () => Get.toNamed(Routes.MOOD_HISTORY),
@@ -468,7 +491,7 @@ class HomeView extends GetView<HomeController> {
                             ),
                             child: Row(
                               children: [
-                                // Icon/Emoji
+                                // Character Image
                                 Container(
                                   width: 50,
                                   height: 50,
@@ -476,10 +499,11 @@ class HomeView extends GetView<HomeController> {
                                     gradient: mood.gradient,
                                     borderRadius: BorderRadius.circular(15),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      mood.emoji,
-                                      style: const TextStyle(fontSize: 24),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Image.asset(
+                                      mood.iconUrl,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
@@ -519,23 +543,38 @@ class HomeView extends GetView<HomeController> {
                                   children: [
                                     GestureDetector(
                                       onTap: controller.openSuggestedActivity,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          gradient: mood.gradient,
-                                          borderRadius: BorderRadius.circular(
-                                            20,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: BackdropFilter(
+                                          filter: ImageFilter.blur(
+                                            sigmaX: 10,
+                                            sigmaY: 10,
                                           ),
-                                        ),
-                                        child: Text(
-                                          'Try it',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(
+                                                0.15,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              border: Border.all(
+                                                color: Colors.white.withOpacity(
+                                                  0.3,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Try it',
+                                              style: GoogleFonts.poppins(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -575,6 +614,7 @@ class HomeView extends GetView<HomeController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 6),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(

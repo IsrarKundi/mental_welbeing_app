@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -248,19 +248,30 @@ class ProgressView extends GetView<ProgressController> {
       child: Obx(() {
         final data = controller.weeklyActivityData;
         final maxVal = data.fold<int>(0, (m, v) => v > m ? v : m);
-        final displayMax = maxVal == 0 ? 5 : maxVal + 1;
+        // Full height is reached at either the daily goal or the weekly peak
+        final displayMax = math
+            .max(maxVal, controller.dailyGoal.value.toDouble().toInt())
+            .clamp(1, 999);
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: List.generate(data.length, (index) {
-            final barHeight = (data[index] / displayMax) * 60.h;
+            // Use a non-linear (square root) scale to make small numbers more visible
+            // while still showing that large numbers are much larger.
+            double heightFactor = 0;
+            if (data[index] > 0) {
+              heightFactor = math.sqrt(data[index]) / math.sqrt(displayMax);
+            }
+
+            final barHeight = heightFactor * 60.h;
+
             return Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
                   width: 14.w,
-                  height: barHeight.clamp(4.h, 60.h),
+                  height: data[index] == 0 ? 3.h : barHeight.clamp(8.h, 60.h),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -356,7 +367,7 @@ class ProgressView extends GetView<ProgressController> {
         SizedBox(height: 10.h),
         Obx(
           () => SizedBox(
-            height: 95.h,
+            height: 115.h,
             child: ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 4.w),
               scrollDirection: Axis.horizontal,
@@ -376,41 +387,101 @@ class ProgressView extends GetView<ProgressController> {
 
   Widget _buildCompactAchievement(Achievement a) {
     final unlockedColor = Color(a.color);
+    final progressText = a.target == 600
+        ? '${(a.current / 60).toStringAsFixed(0)}/${(a.target / 60).toStringAsFixed(0)}h'
+        : '${a.current}/${a.target}';
+
     return Container(
-      width: 90.w,
+      width: 100.w,
+      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
       decoration: BoxDecoration(
         color: a.isUnlocked
-            ? unlockedColor.withOpacity(0.12)
+            ? unlockedColor.withOpacity(0.15)
             : Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: a.isUnlocked
-              ? unlockedColor.withOpacity(0.3)
+              ? unlockedColor.withOpacity(0.4)
               : Colors.white.withOpacity(0.08),
+          width: a.isUnlocked ? 1.5 : 1,
         ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            a.icon,
-            style: TextStyle(
-              fontSize: 26.sp,
-              color: a.isUnlocked ? null : Colors.white12,
+          // Icon with glow effect for unlocked
+          Container(
+            padding: EdgeInsets.all(4.r),
+            decoration: a.isUnlocked
+                ? BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: unlockedColor.withOpacity(0.4),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  )
+                : null,
+            child: Text(
+              a.icon,
+              style: TextStyle(
+                fontSize: 24.sp,
+                color: a.isUnlocked ? null : Colors.white24,
+              ),
             ),
           ),
           SizedBox(height: 6.h),
+          // Title
           Text(
             a.title,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 9.sp,
               fontWeight: FontWeight.w600,
-              color: a.isUnlocked ? Colors.white70 : Colors.white12,
+              color: a.isUnlocked ? Colors.white : Colors.white38,
             ),
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          SizedBox(height: 4.h),
+          // Progress bar or checkmark
+          if (a.isUnlocked)
+            Icon(Icons.check_circle, color: unlockedColor, size: 14.sp)
+          else
+            Column(
+              children: [
+                // Progress bar
+                Container(
+                  height: 4.h,
+                  width: 60.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: a.progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: unlockedColor.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                // Progress text
+                Text(
+                  progressText,
+                  style: GoogleFonts.poppins(
+                    fontSize: 7.sp,
+                    color: Colors.white38,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
@@ -556,9 +627,9 @@ class ProgressView extends GetView<ProgressController> {
     final yesterday = today.subtract(const Duration(days: 1));
     final activityDate = DateTime(date.year, date.month, date.day);
 
-    if (activityDate == today) {
+    if (activityDate.isAtSameMomentAs(today)) {
       return 'Today, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (activityDate == yesterday) {
+    } else if (activityDate.isAtSameMomentAs(yesterday)) {
       return 'Yesterday';
     } else {
       return '${date.day}/${date.month}';
@@ -593,7 +664,7 @@ class ProgressRadialPainter extends CustomPainter {
     // Progress arc
     if (progress > 0.001) {
       final rect = Rect.fromCircle(center: center, radius: radius);
-      final sweepAngle = 2 * pi * progress;
+      final sweepAngle = 2 * math.pi * progress;
 
       final progressPaint = Paint()
         ..color = color
@@ -601,7 +672,7 @@ class ProgressRadialPainter extends CustomPainter {
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
 
-      canvas.drawArc(rect, -pi / 2, sweepAngle, false, progressPaint);
+      canvas.drawArc(rect, -math.pi / 2, sweepAngle, false, progressPaint);
     }
   }
 
