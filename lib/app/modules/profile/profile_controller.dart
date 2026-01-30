@@ -7,7 +7,7 @@ import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/profile_repository.dart';
 import '../../data/repositories/mood_repository.dart';
 import '../../data/repositories/activity_repository.dart';
-import '../../theme/app_colors.dart';
+import '../home/home_controller.dart';
 
 class ProfileController extends GetxController {
   final _authRepo = AuthRepository();
@@ -180,12 +180,9 @@ class ProfileController extends GetxController {
       final newUrl = await _profileRepo.uploadAvatar(File(croppedFile.path));
       avatarUrl.value = newUrl;
 
-      Get.snackbar(
-        'Success',
-        'Profile picture updated successfully!',
-        backgroundColor: AppColors.cyanAccent.withOpacity(0.1),
-        colorText: Colors.white,
-      );
+      if (Get.isRegistered<HomeController>()) {
+        Get.find<HomeController>().fetchUserProfile();
+      }
     } catch (e) {
       Get.snackbar('Error', 'Failed to update profile picture.');
       print('Avatar upload error: $e');

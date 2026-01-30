@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:skeletonizer/skeletonizer.dart' as sk;
 
 import '../../theme/app_colors.dart';
 import '../../widgets/glass_text_field.dart';
-import '../../widgets/typewriter_text.dart';
 import 'chat_controller.dart';
 
 class ChatDetailView extends GetView<ChatController> {
@@ -13,30 +13,15 @@ class ChatDetailView extends GetView<ChatController> {
 
   final ScrollController _scrollController = ScrollController();
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
+  // Scroll to bottom is now handled natively by reverse: true
 
   @override
   Widget build(BuildContext context) {
-    // Scroll to bottom when messages list changes
-    ever(controller.messages, (_) {
-      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
-    });
-
-    // Also scroll when thinking state changes
-    ever(controller.isThinking, (_) {
-      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
-    });
+    // List is reversed (reverse:true), so it stays at the bottom natively
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: AppColors.deepOceanBlue,
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -98,20 +83,20 @@ class ChatDetailView extends GetView<ChatController> {
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                   itemCount:
                       controller.messages.length +
                       (controller.isThinking.value ? 1 : 0),
-                  reverse: false,
+                  reverse: true,
                   itemBuilder: (context, index) {
-                    if (index == controller.messages.length &&
-                        controller.isThinking.value) {
+                    if (controller.isThinking.value && index == 0) {
                       return _buildThinkingIndicator();
                     }
-                    final message = controller.messages[index];
-                    final isLatestAiMessage =
-                        !message.isUser &&
-                        index == controller.messages.length - 1;
+
+                    final msgIndex = controller.isThinking.value
+                        ? index - 1
+                        : index;
+                    final message = controller.messages[msgIndex];
 
                     return Padding(
                           padding: const EdgeInsets.only(bottom: 20),
@@ -121,10 +106,7 @@ class ChatDetailView extends GetView<ChatController> {
                                 : Alignment.centerLeft,
                             child: message.isUser
                                 ? _buildUserBubble(message.text)
-                                : _buildMentorBubble(
-                                    message.text,
-                                    isLatestAiMessage,
-                                  ),
+                                : _buildMentorBubble(message.text),
                           ),
                         )
                         .animate()
@@ -142,32 +124,42 @@ class ChatDetailView extends GetView<ChatController> {
   }
 
   Widget _buildLoadingHistory() {
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
-      itemCount: 5,
-      itemBuilder: (context, index) {
-        final isLeft = index % 2 == 0;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: Align(
-            alignment: isLeft ? Alignment.centerLeft : Alignment.centerRight,
-            child:
-                Container(
-                      width: Get.width * 0.4 + (index * 20),
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    )
-                    .animate(onPlay: (c) => c.repeat())
-                    .shimmer(
-                      duration: const Duration(milliseconds: 1500),
-                      color: Colors.white12,
-                    ),
-          ),
-        );
-      },
+    return sk.Skeletonizer(
+      enabled: true,
+      effect: sk.ShimmerEffect(
+        baseColor: Colors.white.withOpacity(0.05),
+        highlightColor: Colors.white.withOpacity(0.1),
+      ),
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+        itemCount: 8,
+        itemBuilder: (context, index) {
+          final isUser = index % 3 == 0;
+          final widths = [0.4, 0.7, 0.35, 0.6, 0.5, 0.75, 0.45, 0.3];
+          final bubbleWidth = Get.width * widths[index % widths.length];
+          final isLong = (index % 4 == 0);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Align(
+              alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: bubbleWidth,
+                height: isLong ? 72 : 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(isUser ? 24 : 4),
+                    topRight: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(isUser ? 4 : 24),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -220,10 +212,10 @@ class ChatDetailView extends GetView<ChatController> {
     );
   }
 
-  Widget _buildMentorBubble(String text, bool animate) {
+  Widget _buildMentorBubble(String text) {
     return Container(
       constraints: BoxConstraints(maxWidth: Get.width * 0.75),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.08),
         borderRadius: const BorderRadius.only(
@@ -234,22 +226,17 @@ class ChatDetailView extends GetView<ChatController> {
         ),
         border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
-      child: animate
-          ? TypewriterText(
-              text: text,
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-            )
-          : Text(
-              text,
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-            ),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+      ),
     );
   }
 
   Widget _buildUserBubble(String text) {
     return Container(
       constraints: BoxConstraints(maxWidth: Get.width * 0.75),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -265,13 +252,13 @@ class ChatDetailView extends GetView<ChatController> {
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(4),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.cyanAccent.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: AppColors.cyanAccent.withOpacity(0.1),
+        //     blurRadius: 10,
+        //     spreadRadius: 2,
+        //   ),
+        // ],
       ),
       child: Text(
         text,
@@ -283,29 +270,20 @@ class ChatDetailView extends GetView<ChatController> {
   Widget _buildInputArea() {
     final TextEditingController textController = TextEditingController();
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        0,
-        10,
-        0,
-        Get.context != null
-            ? MediaQuery.of(Get.context!).padding.bottom + 0
-            : 10,
-      ),
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 8),
       decoration: BoxDecoration(
         color: Colors.transparent,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.1),
+        //     blurRadius: 20,
+        //     offset: const Offset(0, -5),
+        //   ),
+        // ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // _buildQuickReplies(textController),
-          // const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GlassTextField(
@@ -322,48 +300,9 @@ class ChatDetailView extends GetView<ChatController> {
             duration: const Duration(seconds: 3),
             color: Colors.white10,
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );
-  }
-
-  Widget _buildQuickReplies(TextEditingController textController) {
-    return Obx(() {
-      if (controller.quickReplies.isEmpty) return const SizedBox.shrink();
-      return SizedBox(
-        height: 38,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: controller.quickReplies.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
-          itemBuilder: (context, index) {
-            final reply = controller.quickReplies[index];
-            return GestureDetector(
-              onTap: () {
-                controller.sendMessage(reply);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
-                child: Text(
-                  reply,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    });
   }
 }

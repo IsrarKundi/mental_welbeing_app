@@ -28,7 +28,7 @@ class MoodRepository {
       'user_id': user.id,
       'emoji': emoji,
       'label': label,
-      'color': color,
+      'color': color.toSigned(32), // Convert to signed 32-bit for PostgreSQL
       'note': note,
     });
   }

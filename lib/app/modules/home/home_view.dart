@@ -7,6 +7,7 @@ import 'package:glassmorphism/glassmorphism.dart';
 import '../../theme/app_colors.dart';
 import '../../routes/app_pages.dart';
 import 'home_controller.dart';
+import 'mood_checkin_sheet.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
@@ -41,6 +42,7 @@ class HomeView extends GetView<HomeController> {
                       _buildDailyFocus(),
                       const SizedBox(height: 14),
                       _buildMoodTracker(),
+                      _buildSuggestedActionCard(),
                       _buildDailyActions(),
                       const SizedBox(height: 10), // Space for FAB
                     ],
@@ -63,7 +65,7 @@ class HomeView extends GetView<HomeController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Good Morning,',
+              controller.greeting,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: Colors.white70,
@@ -109,10 +111,12 @@ class HomeView extends GetView<HomeController> {
                   color: Colors.white.withOpacity(0.2),
                   width: 2,
                 ),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-                  ),
+                image: DecorationImage(
+                  image: controller.profileImageUrl.value.isNotEmpty
+                      ? NetworkImage(controller.profileImageUrl.value)
+                      : const NetworkImage(
+                          'https://ui-avatars.com/api/?name=User&background=random',
+                        ),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -228,51 +232,92 @@ class HomeView extends GetView<HomeController> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              GestureDetector(
-                onTap: () => Get.toNamed(Routes.MOOD_HISTORY),
-                child: GlassmorphicContainer(
-                  width: 85,
-                  height: 32,
-                  borderRadius: 20,
-                  blur: 15,
-                  alignment: Alignment.center,
-                  border: 1,
-                  linearGradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.12),
-                      Colors.white.withOpacity(0.06),
-                    ],
-                    stops: const [0.1, 1],
+              Row(
+                children: [
+                  // Streak Badge
+                  Obx(
+                    () => controller.moodStreak.value > 0
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  '🔥',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${controller.moodStreak.value}',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ),
-                  borderGradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white.withOpacity(0.1),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'History',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
+                  // History Button
+                  GestureDetector(
+                    onTap: () => Get.toNamed(Routes.MOOD_HISTORY),
+                    child: GlassmorphicContainer(
+                      width: 85,
+                      height: 32,
+                      borderRadius: 20,
+                      blur: 15,
+                      alignment: Alignment.center,
+                      border: 1,
+                      linearGradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.12),
+                          Colors.white.withOpacity(0.06),
+                        ],
+                        stops: const [0.1, 1],
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.insights_rounded,
-                        color: Colors.white,
-                        size: 14,
+                      borderGradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.2),
+                          Colors.white.withOpacity(0.1),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'History',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.insights_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -291,7 +336,11 @@ class HomeView extends GetView<HomeController> {
                 final isSelected = controller.currentMoodIndex.value == index;
 
                 return GestureDetector(
-                  onTap: () => controller.setMood(index),
+                  onTap: () async {
+                    controller.selectMood(index);
+                    final note = await showMoodCheckinSheet(context, mood);
+                    controller.logMoodWithNote(note);
+                  },
                   child: Column(
                     children: [
                       // Mood Tile
@@ -372,6 +421,154 @@ class HomeView extends GetView<HomeController> {
         ),
       ],
     );
+  }
+
+  Widget _buildSuggestedActionCard() {
+    return Obx(() {
+      final mood = controller.currentMood;
+      final show =
+          controller.showSuggestedAction.value &&
+          !controller.suggestedActionDismissed.value &&
+          mood.suggestedActivityTitle != null;
+
+      return AnimatedSize(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        child: show
+            ? Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                child:
+                    GlassmorphicContainer(
+                          width: double.infinity,
+                          height: 90,
+                          borderRadius: 20,
+                          blur: 20,
+                          alignment: Alignment.center,
+                          border: 1,
+                          linearGradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              mood.gradient.colors.first.withOpacity(0.25),
+                              mood.gradient.colors.last.withOpacity(0.15),
+                            ],
+                          ),
+                          borderGradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withOpacity(0.3),
+                              Colors.white.withOpacity(0.1),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            child: Row(
+                              children: [
+                                // Icon/Emoji
+                                Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    gradient: mood.gradient,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      mood.emoji,
+                                      style: const TextStyle(fontSize: 24),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                // Text Content
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        mood.suggestedActivityTitle!,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        mood.suggestedActivityMessage ?? '',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: Colors.white70,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Action Buttons
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: controller.openSuggestedActivity,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: mood.gradient,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Try it',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    GestureDetector(
+                                      onTap: controller.dismissSuggestedAction,
+                                      child: Text(
+                                        'Dismiss',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 10,
+                                          color: Colors.white54,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .animate()
+                        .fadeIn(duration: 400.ms)
+                        .slideY(
+                          begin: -0.2,
+                          end: 0,
+                          duration: 400.ms,
+                          curve: Curves.easeOutCubic,
+                        ),
+              )
+            : const SizedBox.shrink(),
+      );
+    });
   }
 
   Widget _buildDailyActions() {

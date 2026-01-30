@@ -60,6 +60,24 @@ class AppColors {
     colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)], // Purple/Indigo
   );
 
+  static const LinearGradient anxiousGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF7C3AED), Color(0xFF4C1D95)], // Violet/Deep Purple
+  );
+
+  static const LinearGradient stressedGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF97316), Color(0xFFEA580C)], // Orange/Burnt Orange
+  );
+
+  static const LinearGradient neutralGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF475569), Color(0xFF334155)], // Slate Grey
+  );
+
   // Text Colors
   static const Color textPrimary = Colors.white;
   static const Color textSecondary = Colors.white70;

@@ -134,4 +134,58 @@ class MoodHistoryController extends GetxController {
   }
 
   int get totalLoggedDays => moodHistory.length;
+
+  int get currentStreak {
+    if (moodHistory.isEmpty) return 0;
+
+    final dates = moodHistory.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    int streak = 0;
+    DateTime checkDate = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+
+    for (final date in dates) {
+      if (date == checkDate) {
+        streak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else if (date.isBefore(checkDate)) {
+        break;
+      }
+    }
+
+    return streak;
+  }
+
+  String get personalInsight {
+    if (moodHistory.isEmpty) {
+      return 'Start logging your moods to unlock insights!';
+    }
+
+    final stats = moodStats;
+    if (stats.isEmpty) return 'Keep logging to see patterns!';
+
+    final sorted = stats.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final topMood = sorted.first.key;
+    final topCount = sorted.first.value;
+    final total = moodHistory.length;
+    final percentage = ((topCount / total) * 100).round();
+
+    // Generate contextual insight
+    if (topMood == 'Happy' || topMood == 'Loved' || topMood == 'Calm') {
+      return 'You\'ve felt $topMood $percentage% of the time. Keep nurturing those vibes! 🌟';
+    } else if (topMood == 'Sad' || topMood == 'Tired') {
+      return 'You\'ve been feeling $topMood often. Consider trying a meditation or getting some rest. 💙';
+    } else if (topMood == 'Anxious' || topMood == 'Stressed') {
+      return 'Stress has been common lately. Try the breathing exercises to find calm. 🌊';
+    } else if (topMood == 'Angry') {
+      return 'Anger has surfaced $topCount times. Deep breathing can help release tension. 🌬️';
+    } else {
+      return 'You\'ve logged $total moods. Keep tracking to discover patterns! 📊';
+    }
+  }
 }

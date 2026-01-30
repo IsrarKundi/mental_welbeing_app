@@ -23,7 +23,7 @@ class MoodEntry {
       userId: json['user_id'],
       emoji: json['emoji'],
       label: json['label'],
-      color: json['color'],
+      color: (json['color'] as int).toUnsigned(32),
       note: json['note'],
       createdAt: DateTime.parse(json['created_at']),
     );

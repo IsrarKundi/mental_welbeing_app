@@ -90,22 +90,23 @@ class ChatController extends GetxController {
           isUser: false,
           timestamp: DateTime.now(),
         );
-        messages.add(welcomeMsg);
+        messages.insert(0, welcomeMsg);
         await _chatRepo.saveMessage(
           mentorId: mentor.id,
           text: mentor.welcomeMessage,
           isUser: false,
         );
       } else {
-        for (final item in history) {
-          messages.add(
-            Message(
-              text: item['message_text'],
-              isUser: item['is_user'],
-              timestamp: DateTime.parse(item['created_at']),
-            ),
-          );
-        }
+        final List<Message> loadedMessages = history
+            .map(
+              (item) => Message(
+                text: item['message_text'],
+                isUser: item['is_user'],
+                timestamp: DateTime.parse(item['created_at']),
+              ),
+            )
+            .toList();
+        messages.addAll(loadedMessages);
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to load chat history.');
@@ -157,7 +158,7 @@ class ChatController extends GetxController {
       isUser: true,
       timestamp: DateTime.now(),
     );
-    messages.add(userMessage);
+    messages.insert(0, userMessage);
 
     try {
       await _chatRepo.saveMessage(
@@ -198,16 +199,14 @@ CONSTRAINTS:
 
     final recentMessages = messages
         .where((m) => m.timestamp.isAfter(oneDayAgo))
+        .take(16)
         .toList();
 
-    // Take the last 15 messages for context
-    final contextMessages = recentMessages.length > 15
-        ? recentMessages.sublist(recentMessages.length - 15)
-        : recentMessages;
+    final chronoMessages = recentMessages.reversed.toList();
 
     final history = <Content>[];
-    for (int i = 0; i < contextMessages.length - 1; i++) {
-      final m = contextMessages[i];
+    for (int i = 0; i < chronoMessages.length - 1; i++) {
+      final m = chronoMessages[i];
       // Gemini expects history to start with a User message.
       // If our first message is a Mentor welcome, we skip it for the API history
       // but the user still sees it in the UI.
@@ -222,11 +221,11 @@ CONSTRAINTS:
 
     // 3. Get Response from Gemini
     try {
-      final responseText = await _geminiService.generateResponse(
+      final responseText = (await _geminiService.generateResponse(
         systemPrompt: systemPrompt,
         history: history,
         userMessage: userMessage,
-      );
+      )).trim();
 
       isThinking.value = false;
 
@@ -238,7 +237,7 @@ CONSTRAINTS:
         isUser: false,
         timestamp: DateTime.now(),
       );
-      messages.add(aiMessage);
+      messages.insert(0, aiMessage);
 
       await _chatRepo.saveMessage(
         mentorId: mentor.id,

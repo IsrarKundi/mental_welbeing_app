@@ -10,7 +10,8 @@ class ChatRepository {
         .from('chat_messages')
         .select()
         .eq('mentor_id', mentorId)
-        .order('created_at', ascending: true);
+        .order('created_at', ascending: false)
+        .limit(50);
     return List<Map<String, dynamic>>.from(response);
   }
 
