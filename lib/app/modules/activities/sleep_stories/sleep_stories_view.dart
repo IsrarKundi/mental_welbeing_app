@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../theme/app_colors.dart';
+import '../widgets/completion_feedback_widget.dart';
 import 'sleep_stories_controller.dart';
 
 class SleepStoriesView extends GetView<SleepStoriesController> {
@@ -13,6 +14,11 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set up completion callback
+    controller.onSessionComplete = () {
+      _showCompletionModal(context);
+    };
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -58,6 +64,27 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
             _buildNowPlaying(),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCompletionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => CompletionFeedbackWidget(
+        title: 'Story Complete!',
+        message: 'Sweet dreams! You\'ve finished your sleep story.',
+        onFinish: () {
+          controller.logSession();
+          Get.back(); // Return to previous screen
+        },
+        onRedo: () {
+          controller.reset();
+        },
       ),
     );
   }

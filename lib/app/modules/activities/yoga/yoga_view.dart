@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../theme/app_colors.dart';
+import '../widgets/completion_feedback_widget.dart';
 import 'yoga_controller.dart';
 
 class YogaView extends GetView<YogaController> {
@@ -13,6 +14,11 @@ class YogaView extends GetView<YogaController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set up completion callback
+    controller.onSessionComplete = () {
+      _showCompletionModal(context);
+    };
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -63,6 +69,28 @@ class YogaView extends GetView<YogaController> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCompletionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => CompletionFeedbackWidget(
+        title: 'Yoga Complete!',
+        message:
+            'Namaste! You\'ve finished your yoga session. Great job staying flexible!',
+        onFinish: () {
+          controller.logSession();
+          Get.back(); // Return to previous screen
+        },
+        onRedo: () {
+          controller.reset();
+        },
       ),
     );
   }

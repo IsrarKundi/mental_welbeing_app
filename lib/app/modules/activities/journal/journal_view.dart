@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_colors.dart';
+import '../widgets/completion_feedback_widget.dart';
 import 'journal_controller.dart';
 
 class JournalView extends GetView<JournalController> {
@@ -11,6 +12,11 @@ class JournalView extends GetView<JournalController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set up completion callback
+    controller.onSessionComplete = () {
+      _showCompletionModal(context);
+    };
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -54,6 +60,27 @@ class JournalView extends GetView<JournalController> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCompletionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => CompletionFeedbackWidget(
+        title: 'Gratitude Logged!',
+        message: 'Your thoughts have been saved. Keep focus on the positive!',
+        onFinish: () {
+          Get.back(); // Return to previous screen
+        },
+        onRedo: () {
+          // No redo for journal for now, just close modal
+          Get.back();
+        },
       ),
     );
   }
@@ -273,39 +300,37 @@ class JournalView extends GetView<JournalController> {
   }
 
   Widget _buildSaveButton() {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.mediumImpact();
-        controller.saveEntry();
-        Get.snackbar(
-          '✨ Saved!',
-          'Your gratitude has been recorded',
-          backgroundColor: AppColors.cyanAccent.withOpacity(0.9),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(20),
-          borderRadius: 12,
-          duration: const Duration(seconds: 2),
-        );
-      },
-      child: Container(
-        width: double.infinity,
-        height: 52,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.cyanAccent, AppColors.tealAccent],
-          ),
-          borderRadius: BorderRadius.circular(26),
-        ),
-        child: Center(
-          child: Text(
-            'Save Entry',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+    return Obx(
+      () => GestureDetector(
+        onTap: controller.canSave
+            ? () {
+                HapticFeedback.mediumImpact();
+                controller.saveEntry();
+              }
+            : null,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: controller.canSave ? 1.0 : 0.5,
+          child: Container(
+            width: double.infinity,
+            height: 52,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.cyanAccent, AppColors.tealAccent],
+              ),
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: Center(
+              child: Text(
+                'Save Entry',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ),

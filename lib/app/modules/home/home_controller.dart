@@ -184,7 +184,7 @@ class HomeController extends GetxController {
     }
   }
 
-  void openActivity(DailyAction action) {
+  Future<void> openActivity(DailyAction action) async {
     if (action.route != null) {
       Get.toNamed(action.route!);
     } else {

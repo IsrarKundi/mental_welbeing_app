@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/activity_repository.dart';
+import '../../progress/progress_controller.dart';
 
 class YogaController extends GetxController {
+  final _activityRepo = ActivityRepository();
+
   final selectedPoseIndex = 0.obs;
   final isInPose = false.obs;
   final elapsedSeconds = 0.obs;
   Timer? _timer;
+  VoidCallback? onSessionComplete;
 
   final poses = [
     YogaPose(
@@ -132,6 +138,11 @@ class YogaController extends GetxController {
       Future.delayed(const Duration(seconds: 2), () {
         nextPose();
       });
+    } else {
+      // All poses complete
+      if (onSessionComplete != null) {
+        onSessionComplete!();
+      }
     }
   }
 
@@ -154,6 +165,26 @@ class YogaController extends GetxController {
     _stopTimer();
     isInPose.value = false;
     elapsedSeconds.value = 0;
+  }
+
+  Future<void> logSession() async {
+    try {
+      // Calculate total duration roughly
+      final totalMinutes =
+          poses.fold<int>(0, (sum, pose) => sum + pose.duration) ~/ 60;
+
+      await _activityRepo.logActivity(
+        activityType: 'yoga',
+        durationMinutes: totalMinutes,
+      );
+
+      // Refresh stats
+      if (Get.isRegistered<ProgressController>()) {
+        Get.find<ProgressController>().onInit();
+      }
+    } catch (e) {
+      print('Error logging yoga session: $e');
+    }
   }
 }
 

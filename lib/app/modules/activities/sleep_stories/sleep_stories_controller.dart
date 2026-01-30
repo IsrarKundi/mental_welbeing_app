@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/activity_repository.dart';
+import '../../progress/progress_controller.dart';
 
 class SleepStoriesController extends GetxController {
+  final _activityRepo = ActivityRepository();
+
   final selectedStoryIndex = (-1).obs;
   final isPlaying = false.obs;
   final progress = 0.0.obs;
 
   Timer? _timer;
+  VoidCallback? onSessionComplete;
 
   final stories = [
     SleepStory(
@@ -80,8 +86,37 @@ class SleepStoriesController extends GetxController {
       } else {
         _stopTimer();
         isPlaying.value = false;
+        if (onSessionComplete != null) {
+          onSessionComplete!();
+        }
       }
     });
+  }
+
+  void reset() {
+    _stopTimer();
+    isPlaying.value = false;
+    progress.value = 0.0;
+  }
+
+  Future<void> logSession() async {
+    try {
+      if (selectedStoryIndex.value < 0) return;
+      final story = stories[selectedStoryIndex.value];
+      final duration = int.tryParse(story.duration.split(' ')[0]) ?? 20;
+
+      await _activityRepo.logActivity(
+        activityType: 'sleepStories',
+        durationMinutes: duration,
+      );
+
+      // Refresh stats
+      if (Get.isRegistered<ProgressController>()) {
+        Get.find<ProgressController>().onInit();
+      }
+    } catch (e) {
+      print('Error logging sleep story session: $e');
+    }
   }
 
   void _stopTimer() {

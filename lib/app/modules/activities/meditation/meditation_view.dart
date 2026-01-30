@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_colors.dart';
+import '../widgets/completion_feedback_widget.dart';
 import 'meditation_controller.dart';
 
 class MeditationView extends GetView<MeditationController> {
@@ -12,6 +13,11 @@ class MeditationView extends GetView<MeditationController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set up completion callback
+    controller.onSessionComplete = () {
+      _showCompletionModal(context);
+    };
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -50,6 +56,28 @@ class MeditationView extends GetView<MeditationController> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCompletionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => CompletionFeedbackWidget(
+        title: 'Meditation Complete!',
+        message:
+            'You\'ve finished your meditation. Great job finding your center!',
+        onFinish: () {
+          controller.logSession();
+          Get.back(); // Return to previous screen
+        },
+        onRedo: () {
+          controller.reset();
+        },
       ),
     );
   }

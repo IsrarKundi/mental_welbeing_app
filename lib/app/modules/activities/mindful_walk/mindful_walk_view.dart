@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../theme/app_colors.dart';
+import '../widgets/completion_feedback_widget.dart';
 import 'mindful_walk_controller.dart';
 
 class MindfulWalkView extends GetView<MindfulWalkController> {
@@ -13,6 +14,11 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set up completion callback
+    controller.onSessionComplete = () {
+      _showCompletionModal(context);
+    };
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -51,6 +57,28 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCompletionModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => CompletionFeedbackWidget(
+        title: 'Walk Complete!',
+        message:
+            'You\'ve finished your mindful walk. Great job staying present!',
+        onFinish: () {
+          controller.logSession();
+          Get.back(); // Return to previous screen
+        },
+        onRedo: () {
+          controller.reset();
+        },
       ),
     );
   }
@@ -232,9 +260,15 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
             ),
           ),
           const SizedBox(width: 32),
-          // Play/Pause
+          // Play/Pause/Stop
           GestureDetector(
-            onTap: controller.toggleWalking,
+            onTap: () {
+              if (controller.isWalking.value) {
+                controller.stopWalkingManually();
+              } else {
+                controller.toggleWalking();
+              }
+            },
             child: Container(
               width: 72,
               height: 72,
@@ -248,7 +282,7 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
               ),
               child: Icon(
                 controller.isWalking.value
-                    ? Icons.pause_rounded
+                    ? Icons.stop_rounded
                     : Icons.directions_walk_rounded,
                 color: Colors.white,
                 size: 36,

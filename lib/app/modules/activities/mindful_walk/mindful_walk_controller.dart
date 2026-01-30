@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/activity_repository.dart';
+import '../../progress/progress_controller.dart';
 
 class MindfulWalkController extends GetxController {
+  final _activityRepo = ActivityRepository();
+
   final isWalking = false.obs;
   final elapsedSeconds = 0.obs;
   final selectedEnvironment = 0.obs;
   Timer? _timer;
+  VoidCallback? onSessionComplete;
 
   final environments = [
     WalkEnvironment(
@@ -90,6 +96,36 @@ class MindfulWalkController extends GetxController {
     _stopTimer();
     isWalking.value = false;
     elapsedSeconds.value = 0;
+  }
+
+  void stopWalkingManually() {
+    if (elapsedSeconds.value > 0) {
+      _stopTimer();
+      isWalking.value = false;
+      if (onSessionComplete != null) {
+        onSessionComplete!();
+      }
+    } else {
+      reset();
+    }
+  }
+
+  Future<void> logSession() async {
+    try {
+      if (elapsedSeconds.value < 10) return; // Don't log very short sessions
+
+      await _activityRepo.logActivity(
+        activityType: 'mindfulWalk',
+        durationMinutes: (elapsedSeconds.value / 60).ceil(),
+      );
+
+      // Refresh stats
+      if (Get.isRegistered<ProgressController>()) {
+        Get.find<ProgressController>().onInit();
+      }
+    } catch (e) {
+      print('Error logging mindful walk session: $e');
+    }
   }
 
   WalkEnvironment get currentEnvironment =>

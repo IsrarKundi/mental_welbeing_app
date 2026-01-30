@@ -1,6 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/activity_repository.dart';
+import '../../progress/progress_controller.dart';
 
 class JournalController extends GetxController {
+  final _activityRepo = ActivityRepository();
+  VoidCallback? onSessionComplete;
   final entries = <JournalEntry>[].obs;
   final gratitudeInputs = ['', '', ''].obs;
   final currentMood = 'grateful'.obs;
@@ -57,18 +62,40 @@ class JournalController extends GetxController {
     selectedMoodIndex.value = index;
   }
 
-  void saveEntry() {
-    // UI only - just show confirmation
-    entries.add(
-      JournalEntry(
-        date: DateTime.now(),
-        entries: List.from(gratitudeInputs),
-        mood: moodOptions[selectedMoodIndex.value],
-      ),
-    );
+  Future<void> saveEntry() async {
+    if (!canSave) return;
 
-    // Reset inputs
-    gratitudeInputs.value = ['', '', ''];
+    try {
+      // 1. Log as an activity
+      await _activityRepo.logActivity(
+        activityType: 'journal',
+        durationMinutes: 5, // Default for journaling
+      );
+
+      // 2. Add to local list (stub)
+      entries.add(
+        JournalEntry(
+          date: DateTime.now(),
+          entries: List.from(gratitudeInputs),
+          mood: moodOptions[selectedMoodIndex.value],
+        ),
+      );
+
+      // 3. Reset inputs
+      gratitudeInputs.value = ['', '', ''];
+
+      // 4. Refresh stats
+      if (Get.isRegistered<ProgressController>()) {
+        Get.find<ProgressController>().onInit();
+      }
+
+      // 5. Notify view
+      if (onSessionComplete != null) {
+        onSessionComplete!();
+      }
+    } catch (e) {
+      print('Error saving journal entry: $e');
+    }
   }
 
   bool get canSave {

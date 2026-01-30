@@ -1,11 +1,14 @@
 import 'package:get/get.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/profile_repository.dart';
-import '../../data/models/user_profile_model.dart';
+import '../../data/repositories/mood_repository.dart';
+import '../../data/repositories/activity_repository.dart';
 
 class ProfileController extends GetxController {
   final _authRepo = AuthRepository();
   final _profileRepo = ProfileRepository();
+  final _moodRepo = MoodRepository();
+  final _activityRepo = ActivityRepository();
 
   final userName = 'User'.obs;
   final email = ''.obs;
@@ -13,6 +16,11 @@ class ProfileController extends GetxController {
   final joinDate = DateTime.now().obs;
   final isLoading = false.obs;
   final notificationsEnabled = true.obs;
+
+  // Real stats for the Insight Rail
+  final currentStreak = 0.obs;
+  final totalSessions = 0.obs;
+  final wellnessTime = '0h'.obs;
 
   @override
   void onInit() {
@@ -30,13 +38,50 @@ class ProfileController extends GetxController {
         final profile = await _profileRepo.getProfile();
         userName.value = profile.fullName ?? 'User';
         avatarUrl.value = profile.avatarUrl;
-        joinDate.value = profile.updatedAt; // Using updatedAt as proxy for now
+        joinDate.value = profile.updatedAt;
+
+        // Fetch Stats
+        final moods = await _moodRepo.getMoods();
+        final activities = await _activityRepo.getActivities();
+
+        totalSessions.value = moods.length + activities.length;
+
+        final minutes = activities.fold(0, (sum, a) => sum + a.durationMinutes);
+        wellnessTime.value = '${(minutes / 60).toStringAsFixed(1)}h';
+
+        _calculateStreak(moods, activities);
       }
     } catch (e) {
       print('Error loading profile: $e');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _calculateStreak(List<dynamic> moods, List<dynamic> activities) {
+    final dates = <DateTime>{};
+    for (var m in moods)
+      dates.add(DateTime(m.createdAt.year, m.createdAt.month, m.createdAt.day));
+    for (var a in activities)
+      dates.add(DateTime(a.createdAt.year, a.createdAt.month, a.createdAt.day));
+
+    final sortedDates = dates.toList()..sort((a, b) => b.compareTo(a));
+
+    int streak = 0;
+    DateTime checkDate = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+
+    for (var date in sortedDates) {
+      if (date == checkDate) {
+        streak++;
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else if (date.isBefore(checkDate))
+        break;
+    }
+    currentStreak.value = streak;
   }
 
   Future<void> signOut() async {

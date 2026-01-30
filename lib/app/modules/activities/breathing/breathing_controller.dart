@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/activity_repository.dart';
+import '../../progress/progress_controller.dart';
 
 enum BreathingPhase { inhale, hold, exhale, rest }
 
 class BreathingController extends GetxController {
+  final _activityRepo = ActivityRepository();
+
   final currentPhase = BreathingPhase.inhale.obs;
   final isPlaying = false.obs;
   final currentCycle = 0.obs;
@@ -16,8 +21,10 @@ class BreathingController extends GetxController {
   final restDuration = 2.obs;
 
   Timer? _phaseTimer;
+  VoidCallback? onSessionComplete;
 
   String get phaseText {
+    // ... same
     switch (currentPhase.value) {
       case BreathingPhase.inhale:
         return 'Breathe In';
@@ -106,8 +113,35 @@ class BreathingController extends GetxController {
         if (currentCycle.value >= totalCycles.value) {
           isPlaying.value = false;
           _stopPhaseTimer();
+          if (onSessionComplete != null) {
+            onSessionComplete!();
+          }
         }
         break;
+    }
+  }
+
+  Future<void> logSession() async {
+    try {
+      // Calculate actual duration based on cycles and durations
+      final totalSecondsPerCycle =
+          inhaleDuration.value +
+          holdDuration.value +
+          exhaleDuration.value +
+          restDuration.value;
+      final totalMinutes = (totalSecondsPerCycle * totalCycles.value) / 60;
+
+      await _activityRepo.logActivity(
+        activityType: 'breathing',
+        durationMinutes: totalMinutes.ceil(),
+      );
+
+      // Refresh stats
+      if (Get.isRegistered<ProgressController>()) {
+        Get.find<ProgressController>().onInit();
+      }
+    } catch (e) {
+      print('Error logging breathing session: $e');
     }
   }
 

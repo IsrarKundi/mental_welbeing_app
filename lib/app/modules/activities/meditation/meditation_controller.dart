@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/repositories/activity_repository.dart';
+import '../../progress/progress_controller.dart';
 
 class MeditationController extends GetxController {
+  final _activityRepo = ActivityRepository();
+
   final isPlaying = false.obs;
   final selectedDuration = 10.obs; // minutes
   final elapsedSeconds = 0.obs;
 
   Timer? _timer;
+  VoidCallback? onSessionComplete;
 
   final availableDurations = [5, 10, 15, 20, 30];
 
@@ -82,6 +88,9 @@ class MeditationController extends GetxController {
         // Meditation complete
         _stopTimer();
         isPlaying.value = false;
+        if (onSessionComplete != null) {
+          onSessionComplete!();
+        }
       } else {
         elapsedSeconds.value++;
       }
@@ -97,6 +106,22 @@ class MeditationController extends GetxController {
     _stopTimer();
     isPlaying.value = false;
     elapsedSeconds.value = 0;
+  }
+
+  Future<void> logSession() async {
+    try {
+      await _activityRepo.logActivity(
+        activityType: 'meditation',
+        durationMinutes: selectedDuration.value,
+      );
+
+      // Refresh stats
+      if (Get.isRegistered<ProgressController>()) {
+        Get.find<ProgressController>().onInit();
+      }
+    } catch (e) {
+      print('Error logging meditation session: $e');
+    }
   }
 
   @override

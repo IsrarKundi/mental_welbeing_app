@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../theme/app_colors.dart';
 import 'profile_controller.dart';
 
@@ -18,24 +18,29 @@ class ProfileView extends GetView<ProfileController> {
           gradient: AppColors.mainBackgroundGradient,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                _buildArchitecturalHeader(),
-                const SizedBox(height: 32),
-                _buildInsightRail(),
-                const SizedBox(height: 60),
-                _buildCategoryLabel('GENERAL'),
-                const SizedBox(height: 24),
-                ..._buildSettingsRail(),
-                const SizedBox(height: 48),
-                _buildSignOutLink(),
-                const SizedBox(height: 120),
-              ],
+          child: Obx(
+            () => Skeletonizer(
+              enabled: controller.isLoading.value,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 40),
+                    _buildArchitecturalHeader(),
+                    const SizedBox(height: 32),
+                    _buildInsightRail(),
+                    const SizedBox(height: 60),
+                    _buildCategoryLabel('GENERAL'),
+                    const SizedBox(height: 24),
+                    ..._buildSettingsRail(),
+                    const SizedBox(height: 48),
+                    _buildSignOutLink(),
+                    const SizedBox(height: 120),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -44,96 +49,89 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   Widget _buildArchitecturalHeader() {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return const Center(
-          child: CircularProgressIndicator(color: Colors.white24),
-        );
-      }
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  controller.userName.value,
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: -1,
-                  ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                controller.userName.value,
+                style: GoogleFonts.poppins(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: -1,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  controller.email.value.toLowerCase(),
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.white60,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: AppColors.cyanAccent.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Text(
-                    controller.memberSince.toUpperCase(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cyanAccent,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.05),
-              image: controller.avatarUrl.value != null
-                  ? DecorationImage(
-                      image: NetworkImage(controller.avatarUrl.value!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1.5,
               ),
-            ),
-            child: controller.avatarUrl.value == null
-                ? const Icon(Icons.person, color: Colors.white24, size: 32)
-                : null,
+              const SizedBox(height: 4),
+              Text(
+                controller.email.value.toLowerCase(),
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.white60,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.cyanAccent.withOpacity(0.3),
+                  ),
+                ),
+                child: Text(
+                  controller.memberSince.toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.cyanAccent,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      );
-    }).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0);
+        ),
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withOpacity(0.05),
+            image: controller.avatarUrl.value != null
+                ? DecorationImage(
+                    image: NetworkImage(controller.avatarUrl.value!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1.5,
+            ),
+          ),
+          child: controller.avatarUrl.value == null
+              ? const Icon(Icons.person, color: Colors.white24, size: 32)
+              : null,
+        ),
+      ],
+    ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.05, end: 0);
   }
 
   Widget _buildInsightRail() {
     return Row(
       children: [
-        _buildMiniInsight('7d Streak', '🔥'),
+        _buildMiniInsight('${controller.currentStreak.value}d Streak', '🔥'),
         const SizedBox(width: 24),
-        _buildMiniInsight('42 Sessions', '🧘'),
+        _buildMiniInsight('${controller.totalSessions.value} Sessions', '🧘'),
         const SizedBox(width: 24),
-        _buildMiniInsight('6.3h Wellness', '⏱️'),
+        _buildMiniInsight('${controller.wellnessTime.value} Wellness', '⏱️'),
       ],
     ).animate().fadeIn(delay: 200.ms, duration: 400.ms);
   }
