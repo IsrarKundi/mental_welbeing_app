@@ -24,6 +24,7 @@ class MeditationView extends GetView<MeditationController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('meditation_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Get.back(),
         ),
@@ -92,6 +93,7 @@ class MeditationView extends GetView<MeditationController> {
             final type = controller.meditationTypes[index];
             final isSelected = controller.selectedTypeIndex.value == index;
             return GestureDetector(
+              key: ValueKey('meditation_type_${type.name.toLowerCase()}'),
               onTap: () {
                 HapticFeedback.selectionClick();
                 controller.selectType(index);
@@ -161,6 +163,7 @@ class MeditationView extends GetView<MeditationController> {
             children: controller.availableDurations.map((duration) {
               final isSelected = controller.selectedDuration.value == duration;
               return GestureDetector(
+                key: ValueKey('meditation_duration_$duration'),
                 onTap: () {
                   HapticFeedback.selectionClick();
                   controller.selectDuration(duration);
@@ -209,6 +212,7 @@ class MeditationView extends GetView<MeditationController> {
         children: [
           // Reset
           GestureDetector(
+            key: const ValueKey('meditation_reset_button'),
             onTap: () {
               HapticFeedback.lightImpact();
               controller.reset();
@@ -230,6 +234,7 @@ class MeditationView extends GetView<MeditationController> {
           const SizedBox(width: 32),
           // Play/Pause
           GestureDetector(
+            key: const ValueKey('meditation_play_pause_button'),
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.togglePlay();
@@ -255,23 +260,32 @@ class MeditationView extends GetView<MeditationController> {
             ),
           ),
           const SizedBox(width: 32),
-          // Sound toggle (placeholder)
+          // Sound toggle
           GestureDetector(
+            key: const ValueKey('meditation_sound_button'),
             onTap: () {
               HapticFeedback.lightImpact();
-              // TODO: Implement sound toggle
+              controller.toggleSound();
             },
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
-              ),
-              child: const Icon(
-                Icons.volume_up_rounded,
-                color: Colors.white54,
-                size: 24,
+            child: Obx(
+              () => Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: controller.isSoundEnabled.value
+                      ? AppColors.cyanAccent.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.08),
+                ),
+                child: Icon(
+                  controller.isSoundEnabled.value
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_off_rounded,
+                  color: controller.isSoundEnabled.value
+                      ? AppColors.cyanAccent
+                      : Colors.white54,
+                  size: 24,
+                ),
               ),
             ),
           ),

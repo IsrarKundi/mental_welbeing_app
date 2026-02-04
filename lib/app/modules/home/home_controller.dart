@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../data/services/app_logger.dart';
+import '../../data/constants/app_assets.dart';
 import '../../theme/app_colors.dart';
 import '../../routes/app_pages.dart';
 import '../mood_history/mood_history_controller.dart';
@@ -112,7 +114,7 @@ class HomeController extends GetxController {
 
       moodStreak.value = streak;
     } catch (e) {
-      print('Error calculating streak: $e');
+      AppLogger.error('Failed to calculate streak', e);
     }
   }
 
@@ -122,7 +124,7 @@ class HomeController extends GetxController {
       userName.value = profile.fullName ?? 'User';
       profileImageUrl.value = profile.avatarUrl ?? '';
     } catch (e) {
-      print('Error fetching profile: $e');
+      AppLogger.error('Failed to fetch profile', e);
     } finally {
       isLoading.value = false;
     }
@@ -225,8 +227,7 @@ class HomeController extends GetxController {
   final dailyActions = [
     DailyAction(
       title: 'Breathing Exercise',
-      imageUrl:
-          'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.breathing,
       type: ActivityType.breathing,
       duration: '5 min',
       difficulty: 'Easy',
@@ -234,8 +235,7 @@ class HomeController extends GetxController {
     ),
     DailyAction(
       title: 'Morning Meditation',
-      imageUrl:
-          'https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.meditation,
       type: ActivityType.meditation,
       duration: '10 min',
       difficulty: 'Beginner',
@@ -243,8 +243,7 @@ class HomeController extends GetxController {
     ),
     DailyAction(
       title: 'Gratitude Journal',
-      imageUrl:
-          'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.journal,
       type: ActivityType.journal,
       duration: '5 min',
       difficulty: 'Easy',
@@ -252,8 +251,7 @@ class HomeController extends GetxController {
     ),
     DailyAction(
       title: 'Sleep Stories',
-      imageUrl:
-          'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.sleepStories,
       type: ActivityType.sleepStories,
       duration: '15 min',
       difficulty: 'Relaxing',
@@ -261,8 +259,7 @@ class HomeController extends GetxController {
     ),
     DailyAction(
       title: 'Mindful Walk',
-      imageUrl:
-          'https://images.unsplash.com/photo-1502904550040-7534597429ae?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.mindfulWalk,
       type: ActivityType.mindfulWalk,
       duration: '20 min',
       difficulty: 'Moderate',
@@ -270,8 +267,7 @@ class HomeController extends GetxController {
     ),
     DailyAction(
       title: 'Yoga Session',
-      imageUrl:
-          'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.yoga,
       type: ActivityType.yoga,
       duration: '15 min',
       difficulty: 'Intermediate',
@@ -312,7 +308,7 @@ class HomeController extends GetxController {
       // Update streak
       _calculateMoodStreak();
     } catch (e) {
-      print('Error logging mood: $e');
+      AppLogger.error('Failed to log mood', e);
       Get.snackbar('Error', 'Failed to save mood to your history.');
     }
   }
@@ -339,7 +335,7 @@ class HomeController extends GetxController {
         Get.find<MoodHistoryController>().onInit(); // Simple refresh
       }
     } catch (e) {
-      print('Error logging mood: $e');
+      AppLogger.error('Failed to log mood', e);
       Get.snackbar('Error', 'Failed to save mood to your history.');
     }
   }

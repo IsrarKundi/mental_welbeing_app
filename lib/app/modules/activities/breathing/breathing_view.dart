@@ -26,6 +26,7 @@ class BreathingView extends GetView<BreathingController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('breathing_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Get.back(),
         ),
@@ -147,6 +148,7 @@ class BreathingView extends GetView<BreathingController> {
         children: [
           // Reset
           GestureDetector(
+            key: const ValueKey('breathing_reset_button'),
             onTap: () {
               HapticFeedback.lightImpact();
               controller.resetSession();
@@ -168,6 +170,7 @@ class BreathingView extends GetView<BreathingController> {
           const SizedBox(width: 32),
           // Play/Pause
           GestureDetector(
+            key: const ValueKey('breathing_play_pause_button'),
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.togglePlay();
@@ -195,6 +198,7 @@ class BreathingView extends GetView<BreathingController> {
           const SizedBox(width: 32),
           // Settings
           GestureDetector(
+            key: const ValueKey('breathing_settings_button'),
             onTap: () {
               HapticFeedback.lightImpact();
               _showSettingsSheet(Get.context!);
@@ -291,6 +295,9 @@ class BreathingView extends GetView<BreathingController> {
             Row(
               children: [
                 GestureDetector(
+                  key: ValueKey(
+                    'breathing_setting_minus_${label.toLowerCase()}',
+                  ),
                   onTap: () {
                     if (value.value > min) value.value--;
                   },
@@ -321,6 +328,9 @@ class BreathingView extends GetView<BreathingController> {
                   ),
                 ),
                 GestureDetector(
+                  key: ValueKey(
+                    'breathing_setting_plus_${label.toLowerCase()}',
+                  ),
                   onTap: () {
                     if (value.value < max) value.value++;
                   },
@@ -515,6 +525,7 @@ class _PremiumBreathingRingState extends State<PremiumBreathingRing>
 
   @override
   void dispose() {
+    _progressController.removeListener(_updateSecondsRemaining);
     _progressController.dispose();
     _scaleController.dispose();
     super.dispose();

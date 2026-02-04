@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import '../../data/services/app_logger.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/profile_repository.dart';
 import '../../data/repositories/mood_repository.dart';
@@ -57,7 +58,7 @@ class ProfileController extends GetxController {
         _calculateStreak(moods, activities);
       }
     } catch (e) {
-      print('Error loading profile: $e');
+      AppLogger.error('Failed to load profile', e);
     } finally {
       isLoading.value = false;
     }
@@ -185,7 +186,7 @@ class ProfileController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to update profile picture.');
-      print('Avatar upload error: $e');
+      AppLogger.error('Failed to upload avatar', e);
     } finally {
       isLoading.value = false;
     }

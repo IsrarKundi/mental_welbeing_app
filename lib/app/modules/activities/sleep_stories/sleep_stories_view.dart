@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../theme/app_colors.dart';
+import '../../../utils/app_image_provider.dart';
 import '../widgets/completion_feedback_widget.dart';
 import 'sleep_stories_controller.dart';
 
@@ -25,6 +26,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('sleep_stories_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Get.back(),
         ),
@@ -139,6 +141,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
     return Obx(() {
       final isSelected = controller.selectedStoryIndex.value == index;
       return GestureDetector(
+        key: ValueKey('sleep_story_card_$index'),
         onTap: () => controller.selectStory(index),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -158,12 +161,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
               fit: StackFit.expand,
               children: [
                 // Background image
-                Image.network(
-                  story.imageUrl,
-                  fit: BoxFit.cover,
-                  color: Colors.black.withOpacity(0.4),
-                  colorBlendMode: BlendMode.darken,
-                ),
+                AppImageProvider.buildImage(story.imageUrl, fit: BoxFit.cover),
                 // Gradient overlay
                 Container(
                   decoration: BoxDecoration(
@@ -347,7 +345,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
                     // Thumbnail - Removed shadow as requested
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
+                      child: AppImageProvider.buildImage(
                         story.imageUrl,
                         width: 56,
                         height: 56,
@@ -384,6 +382,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
                     ),
                     // Controls - cleaner icons
                     GestureDetector(
+                      key: const ValueKey('sleep_player_rewind'),
                       onTap: () {
                         HapticFeedback.lightImpact();
                         controller.rewind();
@@ -399,6 +398,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
+                      key: const ValueKey('sleep_player_play_pause'),
                       onTap: () {
                         HapticFeedback.mediumImpact();
                         controller.togglePlay();
@@ -421,6 +421,7 @@ class SleepStoriesView extends GetView<SleepStoriesController> {
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
+                      key: const ValueKey('sleep_player_forward'),
                       onTap: () {
                         HapticFeedback.lightImpact();
                         controller.forward();

@@ -25,6 +25,7 @@ class YogaView extends GetView<YogaController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('yoga_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Get.back(),
         ),
@@ -105,6 +106,9 @@ class YogaView extends GetView<YogaController> {
             final pose = controller.poses[index];
             final isSelected = controller.selectedPoseIndex.value == index;
             return GestureDetector(
+              key: ValueKey(
+                'yoga_pose_${pose.name.toLowerCase().replaceAll(' ', '_')}',
+              ),
               onTap: () => controller.selectPose(index),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -263,6 +267,7 @@ class YogaView extends GetView<YogaController> {
         children: [
           // Previous
           GestureDetector(
+            key: const ValueKey('yoga_prev_pose_button'),
             onTap: controller.previousPose,
             child: Container(
               width: 50,
@@ -281,6 +286,7 @@ class YogaView extends GetView<YogaController> {
           const SizedBox(width: 32),
           // Play/Pause
           GestureDetector(
+            key: const ValueKey('yoga_play_pause_button'),
             onTap: controller.togglePose,
             child: Container(
               width: 72,
@@ -308,6 +314,7 @@ class YogaView extends GetView<YogaController> {
           const SizedBox(width: 32),
           // Next
           GestureDetector(
+            key: const ValueKey('yoga_next_pose_button'),
             onTap: controller.nextPose,
             child: Container(
               width: 50,

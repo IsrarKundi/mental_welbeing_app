@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/services/app_logger.dart';
 import '../../../data/repositories/activity_repository.dart';
 import '../../progress/progress_controller.dart';
 
@@ -10,9 +11,16 @@ class MeditationController extends GetxController {
   final isPlaying = false.obs;
   final selectedDuration = 10.obs; // minutes
   final elapsedSeconds = 0.obs;
+  final isSoundEnabled = true.obs; // Sound toggle state
 
   Timer? _timer;
   VoidCallback? onSessionComplete;
+
+  /// Toggles ambient sound on/off for meditation sessions
+  void toggleSound() {
+    isSoundEnabled.value = !isSoundEnabled.value;
+    // Future enhancement: integrate with audio player
+  }
 
   final availableDurations = [5, 10, 15, 20, 30];
 
@@ -120,7 +128,7 @@ class MeditationController extends GetxController {
         Get.find<ProgressController>().onInit();
       }
     } catch (e) {
-      print('Error logging meditation session: $e');
+      AppLogger.error('Failed to log meditation session', e);
     }
   }
 

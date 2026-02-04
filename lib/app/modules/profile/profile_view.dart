@@ -102,6 +102,7 @@ class ProfileView extends GetView<ProfileController> {
           ),
         ),
         GestureDetector(
+          key: const ValueKey('profile_avatar_button'),
           onTap: () => _showImageSourceSheet(context),
           child: Stack(
             children: [
@@ -208,6 +209,7 @@ class ProfileView extends GetView<ProfileController> {
             ),
             SizedBox(height: 24.h),
             _buildSourceOption(
+              key: const ValueKey('profile_source_camera'),
               icon: Icons.camera_alt_rounded,
               title: 'Take a Photo',
               onTap: () {
@@ -217,6 +219,7 @@ class ProfileView extends GetView<ProfileController> {
             ),
             SizedBox(height: 16.h),
             _buildSourceOption(
+              key: const ValueKey('profile_source_gallery'),
               icon: Icons.photo_library_rounded,
               title: 'Choose from Gallery',
               onTap: () {
@@ -232,11 +235,13 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   Widget _buildSourceOption({
+    Key? key,
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(16.r),
@@ -309,6 +314,9 @@ class ProfileView extends GetView<ProfileController> {
       return Padding(
         padding: const EdgeInsets.only(bottom: 32),
         child: Row(
+          key: ValueKey(
+            'profile_setting_${item.title.toLowerCase().replaceAll(' ', '_')}',
+          ),
           children: [
             Container(
               width: 40,
@@ -349,6 +357,9 @@ class ProfileView extends GetView<ProfileController> {
                 () => Transform.scale(
                   scale: 0.8,
                   child: Switch(
+                    key: ValueKey(
+                      'profile_setting_toggle_${item.title.toLowerCase().replaceAll(' ', '_')}',
+                    ),
                     value: controller.notificationsEnabled.value,
                     onChanged: (_) => controller.toggleNotifications(),
                     activeColor: AppColors.cyanAccent,
@@ -371,6 +382,7 @@ class ProfileView extends GetView<ProfileController> {
   Widget _buildSignOutLink() {
     return Center(
       child: TextButton(
+        key: const ValueKey('profile_sign_out_link'),
         onPressed: controller.signOut,
         child: Text(
           'Log out of Account',

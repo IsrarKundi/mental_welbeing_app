@@ -18,6 +18,7 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('stats_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Get.back(),
         ),
@@ -137,6 +138,7 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
+                  key: const ValueKey('stats_prev_month_button'),
                   onPressed: controller.previousMonth,
                   icon: const Icon(Icons.chevron_left, color: Colors.white70),
                 ),
@@ -149,6 +151,7 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
                   ),
                 ),
                 IconButton(
+                  key: const ValueKey('stats_next_month_button'),
                   onPressed: controller.nextMonth,
                   icon: const Icon(Icons.chevron_right, color: Colors.white70),
                 ),
@@ -199,6 +202,7 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
     final isSelected = _isSameDay(date, controller.selectedDate.value);
 
     return GestureDetector(
+      key: ValueKey('stats_day_cell_${date.year}_${date.month}_${date.day}'),
       onTap: isCurrentMonth ? () => controller.selectDate(date) : null,
       child: Container(
         width: 40,

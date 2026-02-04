@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:get/get.dart';
 
 class SupabaseService extends GetxService {
   late final SupabaseClient client;
+  StreamSubscription<AuthState>? _authSubscription;
 
   Future<SupabaseService> init() async {
     await Supabase.initialize(
@@ -22,7 +24,9 @@ class SupabaseService extends GetxService {
   Stream<AuthState> get onAuthStateChange => client.auth.onAuthStateChange;
 
   void listenToAuthChanges() {
-    onAuthStateChange.listen((data) {
+    // Cancel any existing subscription before creating a new one
+    _authSubscription?.cancel();
+    _authSubscription = onAuthStateChange.listen((data) {
       final AuthChangeEvent event = data.event;
       if (event == AuthChangeEvent.signedIn) {
         Get.offAllNamed('/main');
@@ -30,5 +34,11 @@ class SupabaseService extends GetxService {
         Get.offAllNamed('/login');
       }
     });
+  }
+
+  @override
+  void onClose() {
+    _authSubscription?.cancel();
+    super.onClose();
   }
 }

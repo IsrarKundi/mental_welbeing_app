@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/services/app_logger.dart';
 import '../../../data/repositories/activity_repository.dart';
 import '../../progress/progress_controller.dart';
 
@@ -94,7 +95,7 @@ class JournalController extends GetxController {
         onSessionComplete!();
       }
     } catch (e) {
-      print('Error saving journal entry: $e');
+      AppLogger.error('Failed to save journal entry', e);
     }
   }
 

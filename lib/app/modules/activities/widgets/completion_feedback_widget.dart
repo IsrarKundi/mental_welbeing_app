@@ -86,6 +86,7 @@ class CompletionFeedbackWidget extends StatelessWidget {
                   Colors.white.withOpacity(0.05),
                   Colors.white70,
                   onRedo,
+                  key: const ValueKey('completion_redo_button'),
                 ),
               ),
               const SizedBox(width: 16),
@@ -95,6 +96,7 @@ class CompletionFeedbackWidget extends StatelessWidget {
                   AppColors.cyanAccent,
                   Colors.white,
                   onFinish,
+                  key: const ValueKey('completion_finish_button'),
                 ),
               ),
             ],
@@ -109,9 +111,11 @@ class CompletionFeedbackWidget extends StatelessWidget {
     String text,
     Color background,
     Color textColor,
-    VoidCallback onTap,
-  ) {
+    VoidCallback onTap, {
+    Key? key,
+  }) {
     return GestureDetector(
+      key: key,
       onTap: () {
         Get.back(); // Close modal
         onTap();

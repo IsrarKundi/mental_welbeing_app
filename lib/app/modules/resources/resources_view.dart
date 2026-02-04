@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
+import '../../utils/app_image_provider.dart';
 import 'resources_controller.dart';
 
 class ResourcesView extends GetView<ResourcesController> {
@@ -156,10 +157,14 @@ class ResourcesView extends GetView<ResourcesController> {
     return Obx(
       () => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: controller.filteredResources.asMap().entries.map((entry) {
-            return _buildResourceCard(entry.value, entry.key);
-          }).toList(),
+        child: ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.filteredResources.length,
+          itemBuilder: (context, index) {
+            final resource = controller.filteredResources[index];
+            return _buildResourceCard(resource, index);
+          },
         ),
       ),
     );
@@ -181,7 +186,7 @@ class ResourcesView extends GetView<ResourcesController> {
               topLeft: Radius.circular(20),
               bottomLeft: Radius.circular(20),
             ),
-            child: Image.network(
+            child: AppImageProvider.buildImage(
               resource.imageUrl,
               width: 100,
               height: 100,

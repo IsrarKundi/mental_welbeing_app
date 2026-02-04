@@ -47,6 +47,7 @@ class LoginView extends GetView<LoginController> {
                 _buildLabel('Email Address'),
                 SizedBox(height: 8.h),
                 AuthTextField(
+                  key: const ValueKey('login_email_field'),
                   controller: controller.emailController,
                   hintText: 'Enter your email',
                   icon: Icons.email_outlined,
@@ -59,6 +60,7 @@ class LoginView extends GetView<LoginController> {
                 SizedBox(height: 8.h),
                 Obx(
                   () => AuthTextField(
+                    key: const ValueKey('login_password_field'),
                     controller: controller.passwordController,
                     hintText: 'Enter your password',
                     icon: Icons.lock_outline,
@@ -72,6 +74,7 @@ class LoginView extends GetView<LoginController> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
+                    key: const ValueKey('login_forgot_password_button'),
                     onPressed: controller.goToForgotPassword,
                     child: Text(
                       'Forgot Password?',
@@ -87,6 +90,7 @@ class LoginView extends GetView<LoginController> {
 
                 Obx(
                   () => BrandedButton(
+                    key: const ValueKey('login_submit_button'),
                     text: 'Sign In',
                     onTap: controller.login,
                     isLoading: controller.isLoading.value,
@@ -106,6 +110,7 @@ class LoginView extends GetView<LoginController> {
                       ),
                     ),
                     GestureDetector(
+                      key: const ValueKey('login_signup_link'),
                       onTap: controller.goToSignup,
                       child: Text(
                         'Sign Up',

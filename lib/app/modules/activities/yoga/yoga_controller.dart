@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../../../data/services/app_logger.dart';
 import '../../../data/repositories/activity_repository.dart';
 import '../../progress/progress_controller.dart';
 
@@ -183,7 +184,7 @@ class YogaController extends GetxController {
         Get.find<ProgressController>().onInit();
       }
     } catch (e) {
-      print('Error logging yoga session: $e');
+      AppLogger.error('Failed to log yoga session', e);
     }
   }
 }

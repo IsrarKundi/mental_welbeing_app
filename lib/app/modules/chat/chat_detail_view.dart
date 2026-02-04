@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart' as sk;
 
 import '../../theme/app_colors.dart';
 import '../../widgets/glass_text_field.dart';
+import '../../utils/app_image_provider.dart';
 import 'chat_controller.dart';
 
 class ChatDetailView extends GetView<ChatController> {
@@ -26,6 +27,7 @@ class ChatDetailView extends GetView<ChatController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('chat_detail_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Get.back(),
         ),
@@ -38,7 +40,7 @@ class ChatDetailView extends GetView<ChatController> {
                 child: CircleAvatar(
                   radius: 18,
                   backgroundImage: mentor != null
-                      ? NetworkImage(mentor.avatarUrl)
+                      ? AppImageProvider.getProvider(mentor.avatarUrl)
                       : null,
                 ),
               ),
@@ -287,6 +289,8 @@ class ChatDetailView extends GetView<ChatController> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GlassTextField(
+              textFieldKey: const ValueKey('chat_input_field'),
+              sendButtonKey: const ValueKey('chat_send_button'),
               controller: textController,
               hintText: 'Type a message...',
               onSend: () {

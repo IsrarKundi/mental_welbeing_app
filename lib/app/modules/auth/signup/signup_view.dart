@@ -27,6 +27,7 @@ class SignupView extends GetView<SignupController> {
               children: [
                 SizedBox(height: 32.h),
                 GestureDetector(
+                  key: const ValueKey('signup_back_button'),
                   onTap: controller.goToLogin,
                   child: Icon(
                     Icons.arrow_back_ios,
@@ -56,6 +57,7 @@ class SignupView extends GetView<SignupController> {
                 _buildLabel('Full Name'),
                 SizedBox(height: 8.h),
                 AuthTextField(
+                  key: const ValueKey('signup_name_field'),
                   controller: controller.fullNameController,
                   hintText: 'Enter your full name',
                   icon: Icons.person_outline,
@@ -66,6 +68,7 @@ class SignupView extends GetView<SignupController> {
                 _buildLabel('Email Address'),
                 SizedBox(height: 8.h),
                 AuthTextField(
+                  key: const ValueKey('signup_email_field'),
                   controller: controller.emailController,
                   hintText: 'Enter your email',
                   icon: Icons.email_outlined,
@@ -78,6 +81,7 @@ class SignupView extends GetView<SignupController> {
                 SizedBox(height: 8.h),
                 Obx(
                   () => AuthTextField(
+                    key: const ValueKey('signup_password_field'),
                     controller: controller.passwordController,
                     hintText: 'Create a password',
                     icon: Icons.lock_outline,
@@ -93,6 +97,7 @@ class SignupView extends GetView<SignupController> {
                 SizedBox(height: 8.h),
                 Obx(
                   () => AuthTextField(
+                    key: const ValueKey('signup_confirm_password_field'),
                     controller: controller.confirmPasswordController,
                     hintText: 'Confirm your password',
                     icon: Icons.lock_clock_outlined,
@@ -107,6 +112,7 @@ class SignupView extends GetView<SignupController> {
 
                 Obx(
                   () => BrandedButton(
+                    key: const ValueKey('signup_submit_button'),
                     text: 'Sign Up',
                     onTap: controller.signup,
                     isLoading: controller.isLoading.value,
@@ -126,6 +132,7 @@ class SignupView extends GetView<SignupController> {
                       ),
                     ),
                     GestureDetector(
+                      key: const ValueKey('signup_login_link'),
                       onTap: controller.goToLogin,
                       child: Text(
                         'Sign In',

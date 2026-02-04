@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../data/services/app_logger.dart';
 import '../../data/repositories/mood_repository.dart';
 import '../../data/repositories/activity_repository.dart';
 
@@ -73,7 +74,7 @@ class ProgressController extends GetxController {
       // Weekly Chart Data
       _calculateWeeklyChartData(moods, activities);
     } catch (e) {
-      // Error fetching stats
+      AppLogger.error('Failed to fetch progress stats', e);
     } finally {
       isLoading.value = false;
     }

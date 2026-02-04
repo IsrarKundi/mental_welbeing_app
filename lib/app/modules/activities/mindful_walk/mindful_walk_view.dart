@@ -25,6 +25,7 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('mindful_walk_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Get.back(),
         ),
@@ -93,6 +94,7 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
             final env = controller.environments[index];
             final isSelected = controller.selectedEnvironment.value == index;
             return GestureDetector(
+              key: ValueKey('mindful_walk_env_${env.name.toLowerCase()}'),
               onTap: () {
                 HapticFeedback.selectionClick();
                 controller.selectEnvironment(index);
@@ -241,6 +243,7 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
         children: [
           // Reset
           GestureDetector(
+            key: const ValueKey('mindful_walk_reset_button'),
             onTap: () {
               HapticFeedback.lightImpact();
               controller.reset();
@@ -262,6 +265,7 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
           const SizedBox(width: 32),
           // Play/Pause/Stop
           GestureDetector(
+            key: const ValueKey('mindful_walk_toggle_button'),
             onTap: () {
               if (controller.isWalking.value) {
                 controller.stopWalkingManually();
@@ -292,6 +296,7 @@ class MindfulWalkView extends GetView<MindfulWalkController> {
           const SizedBox(width: 32),
           // Volume
           GestureDetector(
+            key: const ValueKey('mindful_walk_volume_button'),
             onTap: () => HapticFeedback.lightImpact(),
             child: Container(
               width: 50,

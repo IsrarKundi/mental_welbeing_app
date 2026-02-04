@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
+import '../../utils/app_image_provider.dart';
 import 'onboarding_controller.dart';
 
 class OnboardingView extends GetView<OnboardingController> {
@@ -100,7 +101,7 @@ class OnboardingView extends GetView<OnboardingController> {
                     children: [
                       // Background Image
                       Positioned.fill(
-                        child: Image.network(
+                        child: AppImageProvider.buildImage(
                           _getImageUrl(index),
                           fit: BoxFit.cover,
                           color: Colors.black.withOpacity(0.4),

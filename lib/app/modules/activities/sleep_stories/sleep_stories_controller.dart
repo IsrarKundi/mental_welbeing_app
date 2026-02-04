@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/services/app_logger.dart';
+import '../../../data/constants/app_assets.dart';
 import '../../../data/repositories/activity_repository.dart';
 import '../../progress/progress_controller.dart';
 
@@ -19,8 +21,7 @@ class SleepStoriesController extends GetxController {
       title: 'Forest Dreams',
       narrator: 'Sarah Mitchell',
       duration: '25 min',
-      imageUrl:
-          'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.storyForest,
       description: 'A peaceful journey through an enchanted forest',
       color: 0xFF22C55E,
     ),
@@ -28,8 +29,7 @@ class SleepStoriesController extends GetxController {
       title: 'Ocean Waves',
       narrator: 'David Chen',
       duration: '20 min',
-      imageUrl:
-          'https://images.unsplash.com/photo-1505142468610-359e7d316be0?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.storyOcean,
       description: 'Let the rhythm of waves carry you to sleep',
       color: 0xFF0EA5E9,
     ),
@@ -37,8 +37,7 @@ class SleepStoriesController extends GetxController {
       title: 'Mountain Retreat',
       narrator: 'Emma Wilson',
       duration: '30 min',
-      imageUrl:
-          'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=500&q=60',
+      imageUrl: AppAssets.storyMountain,
       description: 'A cozy cabin nestled in snowy peaks',
       color: 0xFF8B5CF6,
     ),
@@ -115,7 +114,7 @@ class SleepStoriesController extends GetxController {
         Get.find<ProgressController>().onInit();
       }
     } catch (e) {
-      print('Error logging sleep story session: $e');
+      AppLogger.error('Failed to log sleep story session', e);
     }
   }
 

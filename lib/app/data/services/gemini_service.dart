@@ -1,5 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'app_logger.dart';
 
 class GeminiService {
   late final GenerativeModel _model;
@@ -36,7 +37,7 @@ class GeminiService {
 
       return response.text ?? "I'm sorry, I couldn't process that.";
     } catch (e) {
-      print('Gemini Error: $e');
+      AppLogger.error('Gemini API failed', e);
       return "I'm having a bit of trouble connecting right now. Let's try again in a moment.";
     }
   }

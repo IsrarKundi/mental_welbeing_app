@@ -131,6 +131,7 @@ class _MoodCheckinSheetState extends State<MoodCheckinSheet> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: TextField(
+                    key: const ValueKey('mood_note_input'),
                     controller: _noteController,
                     focusNode: _focusNode,
                     maxLines: 4,
@@ -159,6 +160,7 @@ class _MoodCheckinSheetState extends State<MoodCheckinSheet> {
                       // Skip Button
                       Expanded(
                         child: GestureDetector(
+                          key: const ValueKey('mood_note_skip_button'),
                           onTap: () {
                             Navigator.of(context).pop();
                             widget.onComplete(null);
@@ -190,6 +192,7 @@ class _MoodCheckinSheetState extends State<MoodCheckinSheet> {
                       Expanded(
                         flex: 2,
                         child: GestureDetector(
+                          key: const ValueKey('mood_note_save_button'),
                           onTap: () {
                             Navigator.of(context).pop();
                             final note = _noteController.text.trim();

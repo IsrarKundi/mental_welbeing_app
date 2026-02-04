@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import '../../data/services/app_logger.dart';
+import '../../data/constants/app_assets.dart';
 import '../../data/repositories/chat_repository.dart';
 import '../../data/models/message_model.dart';
 import '../../data/models/chat_mentor_model.dart';
@@ -31,8 +33,7 @@ class ChatController extends GetxController {
         trait: 'Empathetic',
         specialization: 'Emotional Support',
         personality: 'Gentle, patient, and deeply understanding.',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
+        avatarUrl: AppAssets.mentorSerene,
         welcomeMessage:
             'I\'m here to listen without judgment. How is your heart feeling today?',
       ),
@@ -42,8 +43,7 @@ class ChatController extends GetxController {
         trait: 'Logical',
         specialization: 'CBT & Strategy',
         personality: 'Practical, grounding, and solution-oriented.',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+        avatarUrl: AppAssets.mentorAtlas,
         welcomeMessage:
             'Let\'s break down what\'s on your mind and find a practical path forward.',
       ),
@@ -53,8 +53,7 @@ class ChatController extends GetxController {
         trait: 'Energizing',
         specialization: 'Motivation & Growth',
         personality: 'Inspiring, upbeat, and encouraging.',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+        avatarUrl: AppAssets.mentorNova,
         welcomeMessage:
             'Ready to find your strength? Tell me what you want to achieve today!',
       ),
@@ -64,8 +63,7 @@ class ChatController extends GetxController {
         trait: 'Wise',
         specialization: 'Mindfulness & Zen',
         personality: 'Calm, philosophical, and grounding.',
-        avatarUrl:
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+        avatarUrl: AppAssets.mentorSage,
         welcomeMessage:
             'Take a deep breath. Let us observe the present moment together.',
       ),
@@ -167,7 +165,7 @@ class ChatController extends GetxController {
         isUser: true,
       );
     } catch (e) {
-      print('Error saving message: $e');
+      AppLogger.error('Failed to save message', e);
     }
 
     // Real Gemini AI response

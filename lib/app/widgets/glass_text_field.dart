@@ -10,6 +10,9 @@ class GlassTextField extends StatelessWidget {
   final double height;
   final double borderRadius;
 
+  final Key? textFieldKey;
+  final Key? sendButtonKey;
+
   const GlassTextField({
     Key? key,
     required this.controller,
@@ -18,6 +21,8 @@ class GlassTextField extends StatelessWidget {
     this.sendIcon = Icons.send,
     this.height = 50,
     this.borderRadius = 30,
+    this.textFieldKey,
+    this.sendButtonKey,
   }) : super(key: key);
 
   @override
@@ -30,6 +35,7 @@ class GlassTextField extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
+              key: textFieldKey,
               controller: controller,
 
               style: GoogleFonts.poppins(color: Colors.white),
@@ -43,6 +49,7 @@ class GlassTextField extends StatelessWidget {
           ),
           if (onSend != null && sendIcon != null)
             IconButton(
+              key: sendButtonKey,
               icon: Icon(sendIcon, color: Colors.white),
               onPressed: onSend,
             ),

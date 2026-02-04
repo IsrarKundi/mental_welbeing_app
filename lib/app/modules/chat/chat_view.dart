@@ -48,6 +48,7 @@ class ChatView extends GetView<ChatController> {
 
   Widget _buildMentorCard(mentor, int index) {
     return GestureDetector(
+      key: ValueKey('chat_mentor_${mentor.name.toLowerCase()}'),
       onTap: () => controller.startChat(mentor),
       child:
           GlassmorphicContainer(
@@ -82,7 +83,7 @@ class ChatView extends GetView<ChatController> {
                         tag: 'mentor_avatar_${mentor.id}',
                         child: CircleAvatar(
                           radius: 24,
-                          backgroundImage: NetworkImage(mentor.avatarUrl),
+                          backgroundImage: AssetImage(mentor.avatarUrl),
                         ),
                       ),
                       const SizedBox(width: 16),

@@ -23,6 +23,7 @@ class JournalView extends GetView<JournalController> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          key: const ValueKey('journal_back_button'),
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Get.back(),
         ),
@@ -127,6 +128,7 @@ class JournalView extends GetView<JournalController> {
                 final mood = controller.moodOptions[index];
                 final isSelected = controller.selectedMoodIndex.value == index;
                 return GestureDetector(
+                  key: ValueKey('journal_mood_${mood.label.toLowerCase()}'),
                   onTap: () {
                     HapticFeedback.selectionClick();
                     controller.selectMood(index);
@@ -248,6 +250,7 @@ class JournalView extends GetView<JournalController> {
             ),
           ),
           TextField(
+            key: ValueKey('journal_input_$index'),
             onChanged: (value) => controller.updateGratitude(index, value),
             style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
             maxLines: 2,

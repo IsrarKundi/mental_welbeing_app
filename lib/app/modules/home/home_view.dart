@@ -8,6 +8,8 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/app_colors.dart';
 import '../../routes/app_pages.dart';
+import '../../data/services/sos_service.dart';
+import '../../utils/app_image_provider.dart';
 import 'home_controller.dart';
 import 'mood_checkin_sheet.dart';
 
@@ -20,41 +22,41 @@ class HomeView extends GetView<HomeController> {
       backgroundColor: Colors.transparent,
       extendBody: true,
       extendBodyBehindAppBar: true,
-      body: Obx(
-        () => SizedBox.expand(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 800),
-            decoration: BoxDecoration(gradient: controller.currentGradient),
-            child: Stack(
+      body: Stack(
+        children: [
+          // Background that rebuilds on gradient change
+          Obx(
+            () => AnimatedContainer(
+              duration: const Duration(milliseconds: 800),
+              decoration: BoxDecoration(gradient: controller.currentGradient),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          // Scrollable content that stays static
+          SingleChildScrollView(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              bottom: MediaQuery.of(context).padding.bottom,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top,
-                    bottom: MediaQuery.of(context).padding.bottom,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: _buildHeader(),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildDailyFocus(),
-                      const SizedBox(height: 14),
-                      _buildMoodTracker(),
-                      _buildSuggestedActionCard(),
-                      _buildDailyActions(),
-                      const SizedBox(height: 10), // Space for FAB
-                    ],
-                  ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildHeader(),
                 ),
-                // _buildSOSButton(),
+                const SizedBox(height: 8),
+                _buildDailyFocus(),
+                const SizedBox(height: 14),
+                _buildMoodTracker(),
+                _buildSuggestedActionCard(),
+                _buildDailyActions(),
+                const SizedBox(height: 10), // Space for FAB
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -110,7 +112,7 @@ class HomeView extends GetView<HomeController> {
                       size: 24,
                     );
                   }
-                  return Image.network(
+                  return AppImageProvider.buildImage(
                     imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
@@ -118,25 +120,6 @@ class HomeView extends GetView<HomeController> {
                         LucideIcons.user,
                         color: Colors.white70,
                         size: 24,
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                : null,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Colors.white54,
-                            ),
-                          ),
-                        ),
                       );
                     },
                   );
@@ -157,8 +140,8 @@ class HomeView extends GetView<HomeController> {
             height: 180,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              image: const DecorationImage(
-                image: NetworkImage(
+              image: DecorationImage(
+                image: AppImageProvider.getProvider(
                   'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=800&q=80',
                 ),
                 fit: BoxFit.cover,
@@ -295,6 +278,7 @@ class HomeView extends GetView<HomeController> {
 
                   // History Button
                   GestureDetector(
+                    key: const ValueKey('home_history_button'),
                     onTap: () => Get.toNamed(Routes.MOOD_HISTORY),
                     child: GlassmorphicContainer(
                       width: 85,
@@ -359,6 +343,7 @@ class HomeView extends GetView<HomeController> {
                 final isSelected = controller.currentMoodIndex.value == index;
 
                 return GestureDetector(
+                  key: ValueKey('mood_tile_${mood.label.toLowerCase()}'),
                   onTap: () async {
                     controller.selectMood(index);
                     final note = await showMoodCheckinSheet(context, mood);
@@ -542,6 +527,9 @@ class HomeView extends GetView<HomeController> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     GestureDetector(
+                                      key: const ValueKey(
+                                        'suggested_action_try_button',
+                                      ),
                                       onTap: controller.openSuggestedActivity,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(20),
@@ -581,6 +569,9 @@ class HomeView extends GetView<HomeController> {
                                     ),
                                     const SizedBox(height: 6),
                                     GestureDetector(
+                                      key: const ValueKey(
+                                        'suggested_action_dismiss_button',
+                                      ),
                                       onTap: controller.dismissSuggestedAction,
                                       child: Text(
                                         'Dismiss',
@@ -637,168 +628,157 @@ class HomeView extends GetView<HomeController> {
             itemBuilder: (context, index) {
               final action = controller.dailyActions[index];
               return GestureDetector(
-                onTap: () => controller.openActivity(action),
-                child: GlassmorphicContainer(
-                  width: 155,
-                  height: 200,
-                  borderRadius: 24,
-                  blur: 15,
-                  alignment: Alignment.center,
-                  border: 1,
-                  linearGradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.05),
-                      Colors.white.withOpacity(0.02),
-                    ],
-                  ),
-                  borderGradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white.withOpacity(0.1),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      // Full Background Image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.network(
-                          action.imageUrl,
-                          width: 155,
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
+                    key: ValueKey(
+                      'daily_action_${action.title.toLowerCase().replaceAll(' ', '_')}',
+                    ),
+                    onTap: () => controller.openActivity(action),
+                    child: Container(
+                      width: 155,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          // Subtle glow
+                          BoxShadow(
+                            color: AppColors.cyanAccent.withOpacity(0.08),
+                            blurRadius: 20,
+                            spreadRadius: -2,
+                          ),
+                        ],
                       ),
-                      // Gradient Overlay for readability
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.6),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Difficulty Badge
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: GlassmorphicContainer(
-                          width: 65,
-                          height: 22,
-                          borderRadius: 30,
-                          blur: 8,
-                          alignment: Alignment.center,
-                          border: 0.5,
-                          linearGradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.black.withOpacity(0.3),
-                              Colors.black.withOpacity(0.1),
-                            ],
-                          ),
-                          borderGradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.2),
-                              Colors.white.withOpacity(0.05),
-                            ],
-                          ),
-                          child: Text(
-                            action.difficulty.toUpperCase(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 9,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Full-bleed background image
+                            AppImageProvider.buildImage(
+                              action.imageUrl,
+                              width: 155,
+                              height: 200,
+                              fit: BoxFit.cover,
                             ),
-                          ),
-                        ),
-                      ),
-                      // Bottom Info Panel
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: GlassmorphicContainer(
-                          width: 155,
-                          height: 65,
-                          borderRadius: 0,
-                          blur: 10,
-                          alignment: Alignment.centerLeft,
-                          border: 0,
-                          linearGradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.15),
-                              Colors.white.withOpacity(0.05),
-                            ],
-                          ),
-                          borderGradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.2),
-                              Colors.white.withOpacity(0.1),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
+                            // Elegant bottom vignette
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  stops: const [0.4, 0.75, 1.0],
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withOpacity(0.3),
+                                    Colors.black.withOpacity(0.85),
+                                  ],
+                                ),
+                              ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  action.title,
+                            // Duration badge top-right
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.4),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.15),
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  action.duration,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
                                     color: Colors.white,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 4),
-                                Row(
+                              ),
+                            ),
+                            // Bottom content
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.timer_outlined,
-                                      color: AppColors.cyanAccent,
-                                      size: 13,
-                                    ),
-                                    const SizedBox(width: 4),
                                     Text(
-                                      action.duration,
+                                      action.title,
                                       style: GoogleFonts.poppins(
-                                        fontSize: 11,
-                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                        height: 1.2,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withOpacity(
+                                              0.5,
+                                            ),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.cyanAccent.withOpacity(
+                                          0.2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        action.difficulty,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.cyanAccent,
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                            // Subtle border overlay
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.12),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ).animate().fadeIn(delay: Duration(milliseconds: 100 * index));
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(delay: Duration(milliseconds: 80 * index))
+                  .scale(
+                    begin: const Offset(0.95, 0.95),
+                    end: const Offset(1, 1),
+                    delay: Duration(milliseconds: 80 * index),
+                    duration: 300.ms,
+                    curve: Curves.easeOut,
+                  );
             },
           ),
         ),
@@ -812,13 +792,7 @@ class HomeView extends GetView<HomeController> {
       right: 30,
       child: GestureDetector(
         onTap: () {
-          // TODO: Implement SOS functionality
-          Get.snackbar(
-            'SOS',
-            'Help is on the way!',
-            backgroundColor: Colors.redAccent.withOpacity(0.8),
-            colorText: Colors.white,
-          );
+          SOSService.showSOSDialog();
         },
         child:
             Container(

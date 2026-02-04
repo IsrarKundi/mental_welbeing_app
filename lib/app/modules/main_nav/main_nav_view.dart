@@ -90,8 +90,10 @@ class MainNavView extends GetView<MainNavController> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = controller.currentIndex.value == index;
+    final keyName = 'nav_${label.toLowerCase()}_tab';
 
     return GestureDetector(
+      key: ValueKey(keyName),
       onTap: () => controller.changePage(index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(

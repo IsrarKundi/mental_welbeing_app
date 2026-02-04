@@ -27,6 +27,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
               children: [
                 SizedBox(height: 32.h),
                 GestureDetector(
+                  key: const ValueKey('forgot_password_back_button'),
                   onTap: () => Get.back(),
                   child: Icon(
                     Icons.arrow_back_ios,
@@ -63,6 +64,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
                 ),
                 SizedBox(height: 8.h),
                 AuthTextField(
+                  key: const ValueKey('forgot_password_email_field'),
                   controller: controller.emailController,
                   hintText: 'Enter your email',
                   icon: Icons.email_outlined,
@@ -73,6 +75,7 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
 
                 Obx(
                   () => BrandedButton(
+                    key: const ValueKey('forgot_password_submit_button'),
                     text: 'Send Reset Link',
                     onTap: controller.resetPassword,
                     isLoading: controller.isLoading.value,
