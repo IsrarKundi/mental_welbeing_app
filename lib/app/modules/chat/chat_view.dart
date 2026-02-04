@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 
 import '../../theme/app_colors.dart';
+import '../../widgets/liquid_glass_container.dart';
 import 'chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
@@ -51,30 +51,14 @@ class ChatView extends GetView<ChatController> {
       key: ValueKey('chat_mentor_${mentor.name.toLowerCase()}'),
       onTap: () => controller.startChat(mentor),
       child:
-          GlassmorphicContainer(
+          LiquidGlassContainer(
                 width: double.infinity,
                 height: 70,
                 borderRadius: 20,
                 blur: 15,
                 alignment: Alignment.center,
-                border: 1,
-                linearGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.08),
-                    Colors.white.withOpacity(0.02),
-                  ],
-                ),
-                borderGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.15),
-                    Colors.white.withOpacity(0.05),
-                  ],
-                ),
                 margin: const EdgeInsets.only(bottom: 12),
+                isAnimate: false, // Handled by outer animate()
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(

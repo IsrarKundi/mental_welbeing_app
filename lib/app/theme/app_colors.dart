@@ -8,7 +8,7 @@ class AppColors {
   static const LinearGradient mainBackgroundGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [deepOceanBlue, mutedPurple],
+    colors: [deepOceanBlue, deepOceanBlue],
   );
 
   // Glass Colors

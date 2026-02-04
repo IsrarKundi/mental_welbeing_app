@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/app_colors.dart';
 import '../../routes/app_pages.dart';
 import '../../data/services/sos_service.dart';
 import '../../utils/app_image_provider.dart';
+import '../../widgets/liquid_glass_container.dart';
 import 'home_controller.dart';
 import 'mood_checkin_sheet.dart';
 
@@ -280,30 +280,12 @@ class HomeView extends GetView<HomeController> {
                   GestureDetector(
                     key: const ValueKey('home_history_button'),
                     onTap: () => Get.toNamed(Routes.MOOD_HISTORY),
-                    child: GlassmorphicContainer(
+                    child: LiquidGlassContainer(
                       width: 85,
                       height: 32,
                       borderRadius: 20,
-                      blur: 15,
                       alignment: Alignment.center,
-                      border: 1,
-                      linearGradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.12),
-                          Colors.white.withOpacity(0.06),
-                        ],
-                        stops: const [0.1, 1],
-                      ),
-                      borderGradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.2),
-                          Colors.white.withOpacity(0.1),
-                        ],
-                      ),
+                      isAnimate: false,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -352,38 +334,24 @@ class HomeView extends GetView<HomeController> {
                   child: Column(
                     children: [
                       // Mood Tile
-                      GlassmorphicContainer(
+                      LiquidGlassContainer(
                             width: 64,
                             height: 64,
                             borderRadius: 50,
-                            blur: isSelected
-                                ? 0
-                                : 15, // Less blur when selected to show color
+                            blur: isSelected ? 0 : 15,
                             alignment: Alignment.center,
-                            border: 1,
-                            linearGradient: isSelected
-                                ? mood.gradient
-                                : LinearGradient(
+                            isAnimate: false, // Handled by outer animate()
+                            linearGradient: isSelected ? mood.gradient : null,
+                            borderGradient: isSelected
+                                ? LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      Colors.white.withOpacity(0.12),
-                                      Colors.white.withOpacity(0.06),
+                                      Colors.white.withOpacity(0.4),
+                                      Colors.white.withOpacity(0.2),
                                     ],
-                                    stops: const [0.1, 1],
-                                  ),
-                            borderGradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.white.withOpacity(
-                                  isSelected ? 0.4 : 0.2,
-                                ),
-                                Colors.white.withOpacity(
-                                  isSelected ? 0.2 : 0.1,
-                                ),
-                              ],
-                            ),
+                                  )
+                                : null,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
                               child: Image.asset(
@@ -444,29 +412,21 @@ class HomeView extends GetView<HomeController> {
         curve: Curves.easeOutCubic,
         child: show
             ? Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
                 child:
-                    GlassmorphicContainer(
+                    LiquidGlassContainer(
                           width: double.infinity,
-                          height: 90,
+                          height: 80,
                           borderRadius: 20,
                           blur: 20,
                           alignment: Alignment.center,
-                          border: 1,
+                          isAnimate: false, // Handled by outer animate()
                           linearGradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
                               mood.gradient.colors.first.withOpacity(0.25),
                               mood.gradient.colors.last.withOpacity(0.15),
-                            ],
-                          ),
-                          borderGradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.3),
-                              Colors.white.withOpacity(0.1),
                             ],
                           ),
                           child: Padding(
@@ -531,37 +491,19 @@ class HomeView extends GetView<HomeController> {
                                         'suggested_action_try_button',
                                       ),
                                       onTap: controller.openSuggestedActivity,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                            sigmaX: 10,
-                                            sigmaY: 10,
-                                          ),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                              vertical: 6,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(
-                                                0.15,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              border: Border.all(
-                                                color: Colors.white.withOpacity(
-                                                  0.3,
-                                                ),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'Try it',
-                                              style: GoogleFonts.poppins(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                      child: LiquidGlassContainer(
+                                        width: 70,
+                                        height: 32,
+                                        borderRadius: 20,
+                                        blur: 10,
+                                        isAnimate: false,
+                                        child: Center(
+                                          child: Text(
+                                            'Try it',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
                                             ),
                                           ),
                                         ),
@@ -605,7 +547,7 @@ class HomeView extends GetView<HomeController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
@@ -617,9 +559,9 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 200,
+          height: 190,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
@@ -632,136 +574,144 @@ class HomeView extends GetView<HomeController> {
                       'daily_action_${action.title.toLowerCase().replaceAll(' ', '_')}',
                     ),
                     onTap: () => controller.openActivity(action),
-                    child: Container(
-                      width: 155,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          // Subtle glow
-                          BoxShadow(
-                            color: AppColors.cyanAccent.withOpacity(0.08),
-                            blurRadius: 20,
-                            spreadRadius: -2,
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // Full-bleed background image
-                            AppImageProvider.buildImage(
-                              action.imageUrl,
-                              width: 155,
-                              height: 200,
-                              fit: BoxFit.cover,
+                    child: Semantics(
+                      label:
+                          '${action.title} - ${action.duration} - ${action.difficulty}',
+                      button: true,
+                      child: Container(
+                        width: 160,
+                        height: 250,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.12),
+                              blurRadius: 10,
+                              offset: const Offset(0, 8),
                             ),
-                            // Elegant bottom vignette
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  stops: const [0.4, 0.75, 1.0],
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // Glass backdrop layer
+                            Positioned.fill(
+                              child: LiquidGlassContainer(
+                                borderRadius: 22,
+                                blur: 25,
+                                isAnimate: false,
+                                linearGradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                   colors: [
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(0.3),
-                                    Colors.black.withOpacity(0.85),
+                                    Colors.white.withOpacity(0.12),
+                                    Colors.white.withOpacity(0.04),
                                   ],
                                 ),
+                                child: const SizedBox.expand(),
                               ),
                             ),
-                            // Duration badge top-right
+
+                            // Character Area (The Hero)
                             Positioned(
-                              top: 10,
-                              right: 10,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.4),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.15),
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Text(
-                                  action.duration,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // Bottom content
-                            Positioned(
+                              top: 0,
                               left: 0,
                               right: 0,
-                              bottom: 0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(14),
+                              bottom: 70,
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(22),
+                                  topRight: Radius.circular(22),
+                                ),
+                                child: Hero(
+                                  tag: 'action_image_${action.title}',
+                                  child: AppImageProvider.buildImage(
+                                    action.imageUrl,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Duration Pill (top-left) - Moved slightly inside for safety
+                            Positioned(
+                              top: 10,
+                              left: 10,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 10,
+                                    sigmaY: 10,
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    color: Colors.black.withOpacity(0.1),
+                                    child: Text(
+                                      action.duration,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Bottom Info Section
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.fromLTRB(
+                                  12,
+                                  0,
+                                  12,
+                                  16,
+                                ),
                                 child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       action.title,
                                       style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+
+                                        fontWeight: FontWeight.w700,
                                         color: Colors.white,
                                         height: 1.2,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black.withOpacity(
-                                              0.5,
-                                            ),
-                                            blurRadius: 4,
-                                          ),
-                                        ],
                                       ),
-                                      maxLines: 2,
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.cyanAccent.withOpacity(
-                                          0.2,
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          LucideIcons.barChart2,
+                                          size: 12,
+                                          color: Colors.white.withOpacity(0.7),
                                         ),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        action.difficulty,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.cyanAccent,
-                                          letterSpacing: 0.5,
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          action.difficulty,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white.withOpacity(
+                                              0.7,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   ],
-                                ),
-                              ),
-                            ),
-                            // Subtle border overlay
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.12),
-                                  width: 1,
                                 ),
                               ),
                             ),
@@ -771,13 +721,14 @@ class HomeView extends GetView<HomeController> {
                     ),
                   )
                   .animate()
-                  .fadeIn(delay: Duration(milliseconds: 80 * index))
+                  .fadeIn(
+                    delay: Duration(milliseconds: 100 * index),
+                    duration: 500.ms,
+                  )
                   .scale(
-                    begin: const Offset(0.95, 0.95),
+                    begin: const Offset(0.9, 0.9),
                     end: const Offset(1, 1),
-                    delay: Duration(milliseconds: 80 * index),
-                    duration: 300.ms,
-                    curve: Curves.easeOut,
+                    curve: Curves.easeOutCubic,
                   );
             },
           ),

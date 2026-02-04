@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/liquid_glass_container.dart';
 import 'profile_controller.dart';
 
 class ProfileView extends GetView<ProfileController> {
@@ -106,17 +107,13 @@ class ProfileView extends GetView<ProfileController> {
           onTap: () => _showImageSourceSheet(context),
           child: Stack(
             children: [
-              Container(
+              LiquidGlassContainer(
                 width: 80.r,
                 height: 80.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                    width: 1.5,
-                  ),
-                ),
+                borderRadius: 40.r, // Circle
+                blur: 15,
+                isAnimate: false,
+                border: 1.5,
                 child: ClipOval(
                   child: Obx(() {
                     final imageUrl = controller.avatarUrl.value;
@@ -243,13 +240,11 @@ class ProfileView extends GetView<ProfileController> {
     return GestureDetector(
       key: key,
       onTap: onTap,
-      child: Container(
+      child: LiquidGlassContainer(
+        width: double.infinity,
         padding: EdgeInsets.all(16.r),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
+        borderRadius: 16.r,
+        isAnimate: false,
         child: Row(
           children: [
             Icon(icon, color: AppColors.cyanAccent, size: 20.sp),
@@ -318,13 +313,11 @@ class ProfileView extends GetView<ProfileController> {
             'profile_setting_${item.title.toLowerCase().replaceAll(' ', '_')}',
           ),
           children: [
-            Container(
+            LiquidGlassContainer(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.04),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              borderRadius: 12,
+              isAnimate: false,
               child: Center(
                 child: Text(item.icon, style: const TextStyle(fontSize: 20)),
               ),

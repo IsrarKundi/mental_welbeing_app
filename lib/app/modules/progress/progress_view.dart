@@ -6,6 +6,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/liquid_glass_container.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'progress_controller.dart';
 
 class ProgressView extends GetView<ProgressController> {
@@ -62,7 +64,7 @@ class ProgressView extends GetView<ProgressController> {
               'Statistics',
               style: GoogleFonts.poppins(
                 fontSize: 24.sp,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.5,
               ),
@@ -71,21 +73,30 @@ class ProgressView extends GetView<ProgressController> {
               'Your wellness journey',
               style: GoogleFonts.poppins(
                 fontSize: 11.sp,
-                color: Colors.white54,
+                color: Colors.white60,
               ),
             ),
           ],
         ),
-        Container(
+        LiquidGlassContainer(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: AppColors.cyanAccent.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: AppColors.cyanAccent.withOpacity(0.2)),
+          borderRadius: 20.r,
+          isAnimate: false,
+          linearGradient: LinearGradient(
+            colors: [
+              AppColors.cyanAccent.withOpacity(0.15),
+              AppColors.cyanAccent.withOpacity(0.05),
+            ],
+          ),
+          borderGradient: LinearGradient(
+            colors: [
+              AppColors.cyanAccent.withOpacity(0.3),
+              AppColors.cyanAccent.withOpacity(0.1),
+            ],
           ),
           child: Row(
             children: [
-              Text('🔥', style: TextStyle(fontSize: 12.sp)),
+              Icon(LucideIcons.flame, size: 12.sp, color: AppColors.cyanAccent),
               SizedBox(width: 4.w),
               Obx(
                 () => Text(
@@ -112,41 +123,42 @@ class ProgressView extends GetView<ProgressController> {
           _buildMiniMetric(
             'SESSIONS',
             '${controller.totalSessions.value}',
-            '🧘',
+            LucideIcons.activity,
           ),
-          _buildMiniMetric('MINUTES', '${controller.totalMinutes.value}', '⏱️'),
+          _buildMiniMetric(
+            'MINUTES',
+            '${controller.totalMinutes.value}',
+            LucideIcons.clock,
+          ),
           _buildMiniMetric(
             'GOAL',
             '${(controller.progressPercent * 100).toInt()}%',
-            '🎯',
+            LucideIcons.target,
           ),
         ],
       ),
     ).animate().fadeIn(delay: 200.ms);
   }
 
-  Widget _buildMiniMetric(String label, String value, String icon) {
-    return Container(
+  Widget _buildMiniMetric(String label, String value, IconData icon) {
+    return LiquidGlassContainer(
       width: 105.w,
       padding: EdgeInsets.all(12.r),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
-      ),
+      borderRadius: 14.r,
+      isAnimate: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(icon, style: TextStyle(fontSize: 10.sp)),
+              Icon(icon, size: 10.sp, color: Colors.white60),
               SizedBox(width: 4.w),
               Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 8.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white38,
+                  color: Colors.white60, // Increased contrast
                   letterSpacing: 0.5,
                 ),
               ),
@@ -167,14 +179,11 @@ class ProgressView extends GetView<ProgressController> {
   }
 
   Widget _buildIntegratedDashboard() {
-    return Container(
+    return LiquidGlassContainer(
       width: double.infinity,
       padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
+      borderRadius: 20.r,
+      isAnimate: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -192,7 +201,7 @@ class ProgressView extends GetView<ProgressController> {
                       style: GoogleFonts.poppins(
                         fontSize: 9.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white30,
+                        color: Colors.white54, // Increased contrast
                         letterSpacing: 1,
                       ),
                     ),
@@ -248,59 +257,79 @@ class ProgressView extends GetView<ProgressController> {
       child: Obx(() {
         final data = controller.weeklyActivityData;
         final maxVal = data.fold<int>(0, (m, v) => v > m ? v : m);
-        // Full height is reached at either the daily goal or the weekly peak
         final displayMax = math
             .max(maxVal, controller.dailyGoal.value.toDouble().toInt())
             .clamp(1, 999);
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: List.generate(data.length, (index) {
-            // Use a non-linear (square root) scale to make small numbers more visible
-            // while still showing that large numbers are much larger.
-            double heightFactor = 0;
-            if (data[index] > 0) {
-              heightFactor = math.sqrt(data[index]) / math.sqrt(displayMax);
-            }
+        return Stack(
+          children: [
+            // Horizontal grid lines (25%, 50%, 75%)
+            Positioned.fill(
+              bottom: 20.h, // Leave space for labels
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildGridLine(),
+                  _buildGridLine(),
+                  _buildGridLine(),
+                ],
+              ),
+            ),
+            // Bar chart
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(data.length, (index) {
+                double heightFactor = 0;
+                if (data[index] > 0) {
+                  heightFactor = math.sqrt(data[index]) / math.sqrt(displayMax);
+                }
+                final barHeight = heightFactor * 54.h;
+                final isToday = index == data.length - 1;
 
-            final barHeight = heightFactor * 60.h;
-
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  width: 14.w,
-                  height: data[index] == 0 ? 3.h : barHeight.clamp(8.h, 60.h),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.cyanAccent,
-                        AppColors.cyanAccent.withOpacity(0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(4.r),
+                return Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Bar with divider
+                      Container(
+                        height: data[index] == 0
+                            ? 3.h
+                            : barHeight.clamp(6.h, 54.h),
+                        margin: EdgeInsets.symmetric(horizontal: 1.w),
+                        decoration: BoxDecoration(
+                          color: isToday
+                              ? AppColors.cyanAccent
+                              : AppColors.cyanAccent.withOpacity(0.5),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(3.r),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      // Day label
+                      Text(
+                        controller.weekDays[index],
+                        style: GoogleFonts.poppins(
+                          fontSize: 8.sp,
+                          color: isToday ? Colors.white : Colors.white38,
+                          fontWeight: isToday
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  controller.weekDays[index],
-                  style: GoogleFonts.poppins(
-                    fontSize: 8.sp,
-                    color: index == 6 ? Colors.white : Colors.white24,
-                    fontWeight: index == 6
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                  ),
-                ),
-              ],
-            );
-          }),
+                );
+              }),
+            ),
+          ],
         );
       }),
     );
+  }
+
+  Widget _buildGridLine() {
+    return Container(height: 1, color: Colors.white.withOpacity(0.06));
   }
 
   Widget _buildCompactGoalRing() {
@@ -391,39 +420,40 @@ class ProgressView extends GetView<ProgressController> {
         ? '${(a.current / 60).toStringAsFixed(0)}/${(a.target / 60).toStringAsFixed(0)}h'
         : '${a.current}/${a.target}';
 
-    return Container(
+    return LiquidGlassContainer(
       width: 100.w,
+      height: 110.h, // Explicit height to prevent layout crash
       padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
-      decoration: BoxDecoration(
-        color: a.isUnlocked
-            ? unlockedColor.withOpacity(0.15)
-            : Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: a.isUnlocked
-              ? unlockedColor.withOpacity(0.4)
-              : Colors.white.withOpacity(0.08),
-          width: a.isUnlocked ? 1.5 : 1,
-        ),
-      ),
+      borderRadius: 16.r,
+      isAnimate: false,
+      linearGradient: a.isUnlocked
+          ? LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                unlockedColor.withOpacity(0.2),
+                unlockedColor.withOpacity(0.1),
+              ],
+            )
+          : null,
+      borderGradient: a.isUnlocked
+          ? LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                unlockedColor.withOpacity(0.5),
+                unlockedColor.withOpacity(0.2),
+              ],
+            )
+          : null,
+      border: a.isUnlocked ? 1.5 : 1.0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Icon with glow effect for unlocked
+          // Icon (no glow for cleaner look)
           Container(
             padding: EdgeInsets.all(4.r),
-            decoration: a.isUnlocked
-                ? BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: unlockedColor.withOpacity(0.4),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  )
-                : null,
             child: Text(
               a.icon,
               style: TextStyle(
@@ -440,7 +470,9 @@ class ProgressView extends GetView<ProgressController> {
             style: GoogleFonts.poppins(
               fontSize: 9.sp,
               fontWeight: FontWeight.w600,
-              color: a.isUnlocked ? Colors.white : Colors.white38,
+              color: a.isUnlocked
+                  ? Colors.white
+                  : Colors.white60, // Increased contrast
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -451,6 +483,7 @@ class ProgressView extends GetView<ProgressController> {
             Icon(Icons.check_circle, color: unlockedColor, size: 14.sp)
           else
             Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Progress bar
                 Container(
@@ -567,14 +600,12 @@ class ProgressView extends GetView<ProgressController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                LiquidGlassContainer(
+                  width: double.infinity,
                   padding: EdgeInsets.all(16.r),
                   margin: EdgeInsets.only(bottom: 20.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.04),
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: Colors.white.withOpacity(0.08)),
-                  ),
+                  borderRadius: 16.r,
+                  isAnimate: false,
                   child: Row(
                     children: [
                       Text(activity.icon, style: TextStyle(fontSize: 20.sp)),
@@ -595,7 +626,7 @@ class ProgressView extends GetView<ProgressController> {
                               '${activity.type} • ${_formatDateTime(activity.date)}',
                               style: GoogleFonts.poppins(
                                 fontSize: 10.sp,
-                                color: Colors.white54,
+                                color: Colors.white70, // Increased contrast
                               ),
                             ),
                           ],

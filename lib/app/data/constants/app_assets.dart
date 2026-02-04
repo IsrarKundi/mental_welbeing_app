@@ -10,12 +10,12 @@ class AppAssets {
   // ─────────────────────────────────────────────────────────────
   // Activity Illustrations
   // ─────────────────────────────────────────────────────────────
-  static const String breathing = '$_base/activities/breathing.png';
-  static const String meditation = '$_base/activities/meditation.png';
+  static const String breathing = '$_base/activities/breathing.jpg';
+  static const String meditation = '$_base/activities/meditation.jpg';
   static const String journal = '$_base/activities/journal.png';
-  static const String sleepStories = '$_base/activities/sleep_stories.png';
+  static const String sleepStories = '$_base/activities/sleep_stories.jpg';
   static const String mindfulWalk = '$_base/activities/mindful_walk.png';
-  static const String yoga = '$_base/activities/yoga.png';
+  static const String yoga = '$_base/activities/yoga.jpg';
 
   // ─────────────────────────────────────────────────────────────
   // Mentor Avatars

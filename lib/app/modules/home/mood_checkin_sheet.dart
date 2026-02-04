@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 
 import '../../theme/app_colors.dart';
+import '../../widgets/liquid_glass_container.dart';
 import 'home_controller.dart';
 
 class MoodCheckinSheet extends StatefulWidget {
@@ -105,29 +105,13 @@ class _MoodCheckinSheetState extends State<MoodCheckinSheet> {
               const SizedBox(height: 20),
 
               // Note Input
-              GlassmorphicContainer(
+              LiquidGlassContainer(
                 width: double.infinity,
                 height: 120,
                 borderRadius: 16,
                 blur: 20,
                 alignment: Alignment.topLeft,
-                border: 1,
-                linearGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.05),
-                  ],
-                ),
-                borderGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.2),
-                    Colors.white.withOpacity(0.1),
-                  ],
-                ),
+                isAnimate: false, // Handled by outer animate()
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: TextField(
@@ -201,7 +185,7 @@ class _MoodCheckinSheetState extends State<MoodCheckinSheet> {
                           child: Container(
                             height: 50,
                             decoration: BoxDecoration(
-                              gradient: widget.mood.gradient,
+                              color: AppColors.cyanAccent,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Center(

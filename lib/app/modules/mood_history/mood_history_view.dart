@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 
 import '../../theme/app_colors.dart';
+import '../../widgets/liquid_glass_container.dart';
 import 'mood_history_controller.dart';
 
 class MoodHistoryView extends GetView<MoodHistoryController> {
@@ -404,29 +404,13 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
             ),
             const SizedBox(height: 12),
             // Insight Card
-            GlassmorphicContainer(
+            LiquidGlassContainer(
               width: double.infinity,
               height: 90,
               borderRadius: 16,
               blur: 20,
               alignment: Alignment.center,
-              border: 1,
-              linearGradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.08),
-                  Colors.white.withOpacity(0.04),
-                ],
-              ),
-              borderGradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0.1),
-                ],
-              ),
+              isAnimate: false, // Handled by outer animate()
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -468,13 +452,13 @@ class MoodHistoryView extends GetView<MoodHistoryController> {
             const SizedBox(height: 12),
             // Streak Card (if streak > 0)
             if (streak > 0)
-              GlassmorphicContainer(
+              LiquidGlassContainer(
                 width: double.infinity,
                 height: 70,
                 borderRadius: 16,
                 blur: 20,
                 alignment: Alignment.center,
-                border: 1,
+                isAnimate: false, // Handled by outer animate()
                 linearGradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,

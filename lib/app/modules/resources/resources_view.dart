@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/app_colors.dart';
 import '../../utils/app_image_provider.dart';
+import '../../widgets/liquid_glass_container.dart';
 import 'resources_controller.dart';
 
 class ResourcesView extends GetView<ResourcesController> {
@@ -81,14 +82,12 @@ class ResourcesView extends GetView<ResourcesController> {
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final tip = controller.quickTips[index];
-              return Container(
+              return LiquidGlassContainer(
                 width: 200,
+                height: 80, // Explicit height
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
-                ),
+                borderRadius: 16,
+                isAnimate: false,
                 child: Row(
                   children: [
                     Text(tip.icon, style: const TextStyle(fontSize: 28)),
@@ -171,13 +170,11 @@ class ResourcesView extends GetView<ResourcesController> {
   }
 
   Widget _buildResourceCard(Resource resource, int index) {
-    return Container(
+    return LiquidGlassContainer(
+      width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
+      borderRadius: 20,
+      isAnimate: false,
       child: Row(
         children: [
           // Image
@@ -261,15 +258,17 @@ class ResourcesView extends GetView<ResourcesController> {
   }
 
   Widget _buildEmergencyCard() {
-    return Container(
+    return LiquidGlassContainer(
+      width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.red.withOpacity(0.3), Colors.red.withOpacity(0.1)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      borderRadius: 20,
+      isAnimate: false,
+      linearGradient: LinearGradient(
+        colors: [Colors.red.withOpacity(0.3), Colors.red.withOpacity(0.1)],
+      ),
+      borderGradient: LinearGradient(
+        colors: [Colors.red.withOpacity(0.5), Colors.red.withOpacity(0.3)],
       ),
       child: Row(
         children: [

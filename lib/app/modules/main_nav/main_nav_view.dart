@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../theme/app_colors.dart';
+import '../../widgets/liquid_glass_container.dart';
 import '../home/home_view.dart';
 import '../progress/progress_view.dart';
 import '../chat/chat_view.dart';
@@ -40,29 +40,14 @@ class MainNavView extends GetView<MainNavController> {
             bottom: 15,
             child:
                 Obx(
-                  () => GlassmorphicContainer(
+                  () => LiquidGlassContainer(
                     width: MediaQuery.of(context).size.width - 40,
                     height: 64,
                     borderRadius: 34,
                     blur: 15,
                     alignment: Alignment.center,
                     border: 0.5,
-                    linearGradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withOpacity(0.1),
-                        Colors.white.withOpacity(0.1),
-                      ],
-                    ),
-                    borderGradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withOpacity(0.2),
-                        Colors.white.withOpacity(0.2),
-                      ],
-                    ),
+                    isAnimate: false,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
                       child: Row(
@@ -110,7 +95,7 @@ class MainNavView extends GetView<MainNavController> {
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.cyanAccent.withOpacity(0.8),
-                    AppColors.cyanAccent.withOpacity(0.3),
+                    AppColors.cyanAccent.withOpacity(0.8),
                   ],
                 )
               : null,
